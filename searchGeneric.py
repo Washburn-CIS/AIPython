@@ -57,6 +57,23 @@ class Searcher(Displayable):
         self.display(1,"No (more) solutions. Total of",
                      self.num_expanded,"paths expanded.")
 
+
+
+class BreadthFirstSearcher(Searcher):
+    """returns a searcher for a problem.
+    Paths can be found by repeatedly calling search().
+    This does breadth-first search 
+    """
+    def __init__(self, problem):
+        """creates a searcher from a problem
+        """
+        super().__init__(problem)
+        
+    def add_to_frontier(self,path):
+        self.frontier.insert(0, path) # insert at beginning of list to get a queue
+  
+
+
 import heapq        # part of the Python standard library
 from searchProblem import Path
 
