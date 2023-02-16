@@ -71,6 +71,29 @@ class BreadthFirstSearcher(Searcher):
         
     def add_to_frontier(self,path):
         self.frontier.insert(0, path) # insert at beginning of list to get a queue
+
+
+
+class BreadthFirstSearcherNoCycles(Searcher):
+    """returns a searcher for a problem.
+    Paths can be found by repeatedly calling search().
+    This does breadth-first search 
+    """
+    def __init__(self, problem):
+        """creates a searcher from a problem
+        """
+        super().__init__(problem)
+        
+    def add_to_frontier(self,path):
+        tpath = path
+        visited_states = set()
+        while tpath.arc:  # traverse the path
+          if tpath.initial in visited_states: #see if we've visited the current state before
+            return  # if so, this is a cycle -- do not add to frontier
+          visited_states.add(tpath.initial)  # remember we visisted this state
+          tpath = tpath.initial
+          
+        self.frontier.insert(0, path) # insert at beginning of list to get a queue
   
 
 

@@ -5,6 +5,7 @@ from searchProblem import Path
 import searchGeneric
 from searchGeneric import Searcher
 from searchGeneric import BreadthFirstSearcher
+from searchGeneric import BreadthFirstSearcherNoCycles
 from searchGeneric import AStarSearcher
 
 default_maze_str = """
@@ -38,7 +39,7 @@ class MazePuzzle(Search_problem):
           for c in range(len(rows[r])):
             if rows[r][c] == ' ':
               self.passable_coordinates.add((r, c))
-        print(self.passable_coordinates)
+        #print(self.passable_coordinates)
           
         
     
@@ -69,4 +70,6 @@ class MazePuzzle(Search_problem):
           
         
 problem = MazePuzzle()
-
+searcher = BreadthFirstSearcherNoCycles(problem)
+sol = searcher.search()
+print(sol)
