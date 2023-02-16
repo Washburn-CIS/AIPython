@@ -1,8 +1,11 @@
 import searchProblem
 from searchProblem import Search_problem
+from searchProblem import Arc
+from searchProblem import Path
 import searchGeneric
 from searchGeneric import Searcher
 from searchGeneric import BreadthFirstSearcher
+from searchGeneric import AStarSearcher
 
 default_maze_str = """
 **********
@@ -45,23 +48,25 @@ class MazePuzzle(Search_problem):
     
     def is_goal(self,state):
         """is True if state is a goal"""
-        return node == self.goal_state
+        return state == self.goal_state
 
     def neighbors(self,state):
         """returns a list of the arcs for the neighbors of node"""
         r, c = state
         """
         if (r-1, c) in self.passable_coordinates: # can I travel to (r-1, c) in the maze?
-          yield (r-1, c)
+          yield Arc(state, (r-1, c))
         if (r+1, c) in self.passable_coordinates: 
-          yield (r+1, c)
+          yield Arc(state, (r+1, c))
         if (r, c-1) in self.passable_coordinates: 
-          yield (r, c-1)
+          yield Arc(state, (r, c-1))
         if (r, c+1) in self.passable_coordinates: 
-          yield (r, c+1)
-        """  
-        return filter(lambda s: s in self.passable_coordinates, 
-                      [(r-1, c), (r+1, c), (r, c-1), (r, c+1)])
+          yield Arc(state, (r, c+1))
+        """
+        return map(lambda rs: Arc(state, rs),  # make arcs out of each visitable state
+                   filter(lambda s: s in self.passable_coordinates, # filter out those we can visit
+                          [(r-1, c), (r+1, c), (r, c-1), (r, c+1)]))  # every possible state
           
         
 problem = MazePuzzle()
+
