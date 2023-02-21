@@ -18,7 +18,7 @@ default_maze_str = """
 * * * ** *
 * * **** *
 *        *
-**********"""             
+**********"""                 
 
 default_goal_state = (1, 8)
 default_initial_state = (3, 8)
