@@ -10,19 +10,24 @@ from searchGeneric import AStarSearcher
 import time
 
 default_maze_str = """
-**********
-*        *
-* ********
-* ****** *
-* * *    *
-* * * ** *
-* * * ** *
-* * **** *
-*        *
-**********"""                 
+***********
+*         *
+*         *
+*         *
+*         *
+*         *
+*         *
+*         *
+*         *
+*         *
+*         *
+*         *
+*         *
+*         *
+***********"""                 
 
-default_goal_state = (1, 8)
-default_initial_state = (3, 8)
+default_goal_state = (13, 1)
+default_initial_state = (1, 1)
 
 
 
@@ -36,6 +41,7 @@ class MazePuzzle(Search_problem):
         maze_def = maze_def.strip()
         self.passable_coordinates = set()
         rows = maze_def.split('\n')
+        self.maze_def = maze_def
         for r in range(len(rows)):
           for c in range(len(rows[r])):
             if rows[r][c] == ' ':
@@ -68,10 +74,13 @@ class MazePuzzle(Search_problem):
         return map(lambda rs: Arc(state, rs),  # make arcs out of each visitable state
                    filter(lambda s: s in self.passable_coordinates, # filter out those we can visit
                           [(r-1, c), (r+1, c), (r, c-1), (r, c+1)]))  # every possible state
+                          
+#    def heuristic(self,n):
+#        return abs(n[0] - self.goal_state[0]) + abs(n[1] - self.goal_state[1])
           
         
 problem = MazePuzzle()
-searcher = BreadthFirstSearcherNoCycles(problem)
+searcher = AStarSearcher(problem)
 start_time = time.perf_counter()
 sol = searcher.search()
 end_time = time.perf_counter()
