@@ -7,6 +7,7 @@ from searchGeneric import Searcher
 from searchGeneric import BreadthFirstSearcher
 from searchGeneric import BreadthFirstSearcherNoCycles
 from searchGeneric import AStarSearcher
+import time
 
 default_maze_str = """
 **********
@@ -71,5 +72,8 @@ class MazePuzzle(Search_problem):
         
 problem = MazePuzzle()
 searcher = BreadthFirstSearcherNoCycles(problem)
+start_time = time.perf_counter()
 sol = searcher.search()
+end_time = time.perf_counter()
 print(sol)
+print('time: ' + str(end_time-start_time))
