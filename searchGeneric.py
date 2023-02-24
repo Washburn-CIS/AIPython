@@ -9,6 +9,8 @@
 # See: http://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
 
 from display import Displayable, visualize
+from searchProblem import Search_problem
+from searchProblem import Arc
 
 class Searcher(Displayable):
     """returns a searcher for a problem.
@@ -18,6 +20,7 @@ class Searcher(Displayable):
     def __init__(self, problem):
         """creates a searcher from a problem
         """
+        assert issubclass(type(problem),Search_problem)
         self.problem = problem
         self.initialize_frontier()
         self.num_expanded = 0
@@ -50,6 +53,8 @@ class Searcher(Displayable):
                 return path
             else:
                 neighs = self.problem.neighbors(path.end())
+                for neigh in neighs:
+                    assert issubclass(type(neigh), Arc)
                 self.display(3,"Neighbors are", neighs)
                 for arc in reversed(list(neighs)):
                     self.add_to_frontier(Path(path,arc))
