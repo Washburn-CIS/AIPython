@@ -53,10 +53,9 @@ class Searcher(Displayable):
                 return path
             else:
                 neighs = self.problem.neighbors(path.end())
-                for neigh in neighs:
-                    assert issubclass(type(neigh), Arc)
                 self.display(3,"Neighbors are", neighs)
                 for arc in reversed(list(neighs)):
+                    assert issubclass(type(arc), Arc)
                     self.add_to_frontier(Path(path,arc))
                 self.display(3,"Frontier:",self.frontier)
         self.display(1,"No (more) solutions. Total of",
