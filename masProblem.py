@@ -23,7 +23,7 @@ class Node(Displayable):
         
     def is_leaf(self):
         """returns true of this is a leaf node"""
-        return self.allchildren is None
+        return len(children) == 0
     
     def children(self):
         """returns the list of all children."""

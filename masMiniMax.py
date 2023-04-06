@@ -11,7 +11,7 @@
 def minimax(node,depth):
     """returns the value of node, and a best path for the agents
     """
-    if node.isLeaf():
+    if node.is_leaf():
         return node.evaluate(),None
     elif node.isMax:
         max_score = float("-inf")
@@ -32,14 +32,14 @@ def minimax(node,depth):
                 min_path = C.name,path
         return min_score,min_path
 
-def minimax_alpha_beta(node,alpha,beta,depth=0):
+def minimax_alpha_beta(node,alpha=float('-inf'),beta=float('inf'),depth=0):
     """node is a Node, alpha and beta are cutoffs, depth is the depth
     returns value, path
     where path is a sequence of nodes that results in the value
     """
     node.display(2,"  "*depth,"minimax_alpha_beta(",node.name,", ",alpha, ", ", beta,")")
     best=None      # only used if it will be pruned
-    if node.isLeaf():
+    if node.is_leaf():
         node.display(2,"  "*depth,"returning leaf value",node.evaluate())
         return node.evaluate(),None
     elif node.isMax:
@@ -65,7 +65,7 @@ def minimax_alpha_beta(node,alpha,beta,depth=0):
         node.display(2,"  "*depth,"returning min beta",beta,"best=",best)
         return beta,best
 
-from masProblem import fig10_5, Magic_sum, Node
+#from masProblem import fig10_5, Magic_sum, Node
 
 # Node.max_display_level=2   # print detailed trace
 # minimax_alpha_beta(fig10_5, -9999, 9999,0)
