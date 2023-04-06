@@ -14,13 +14,13 @@ from masProblem import Node
 initial_game_board = (((None,)*3),)*3
 
 
-def print_game_board(state):
+def print_game_board(board):
     v = lambda c: ' ' if not c else c  # draw 'None' as a blank
-    print(v(state[0][0])+'|'+v(state[0][1])+'|'+v(state[0][2]))
+    print(v(board[0][0])+'|'+v(board[0][1])+'|'+v(board[0][2]))
     print('-----')
-    print(v(state[1][0])+'|'+v(state[1][1])+'|'+v(state[1][2]))
+    print(v(board[1][0])+'|'+v(board[1][1])+'|'+v(board[1][2]))
     print('-----')
-    print(v(state[2][0])+'|'+v(state[2][1])+'|'+v(state[2][2]))
+    print(v(board[2][0])+'|'+v(board[2][1])+'|'+v(board[2][2]))
 
 
 class TicTacToe(Node):
@@ -42,7 +42,23 @@ class TicTacToe(Node):
       board = list(new_board)
       board[move[1]] = tuple(row)
       self.board = tuple(board)
-
+    
+  def children(self):
+    """overrides parent method to simply generate child nodes from legal moves"""
+    for move in self.legal_moves():
+      yield TicTacToe(not isMax, move, self.prior_moves)
+  
+  def isLeaf(self):
+    """in tic-tac-toe, this is a leaf node if there are no moves left or a player has 3 in a row"""
+    return len(self.legal_moves()) == 0 or self.evaluate() != 0
+      
+  def legal_moves(self):
+    """generates all legal moves (2-tuples of coordinates) for the current board state"""
+    pass
+   
+  def evaluate(self):
+    """returns the evaluation for this node if it is a leaf"""
+    pass
 
 n = TicTacToe(True, (1, 2))
 print_game_board(n.board)
