@@ -64,7 +64,7 @@ class TicTacToe(Node):
     """returns the evaluation for this node if it is a leaf"""
     def eval3(c1, c2, c3):
       if c1 == c2 and c2 == c3 and c1:  # all values are the same and not blank
-        return 1 if row[0] == 'X' else -1
+        return 1 if c1 == 'X' else -1
       else:
         return 0
     
@@ -87,18 +87,19 @@ class TicTacToe(Node):
       
     return 0
     
-    
-n = TicTacToe(True)
+   
+n = TicTacToe()
+from ast import literal_eval
+while n.legal_moves() and not n.evaluate():
+  print_game_board(n.board)
+  print('')
+  if not n.isMax:
+    move = literal_eval(input("enter move: "))
+    n = TicTacToe(True, move, n.prior_moves, n.board)
+  else:
+    move = literal_eval(minimax_alpha_beta(n)[1][0])
+    n = TicTacToe(False, move, n.prior_moves, n.board)
 
-n2 = minimax_alpha_beta(n)
-print(n2)
-
-
-
-
-
-
-
-
-
-
+print('final state:')
+print_game_board(n.board)
+print(n.evaluate())
