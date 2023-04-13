@@ -114,33 +114,6 @@ class Reversi(Node):
     # todo: add heuristic for non-leaf states
     return 0 
 
-
-
-a = (
-  ('X',)*8, 
-  ('X',)*8, 
-  ('X',)*8, 
-  ('X',)*8, 
-  ('X',)*8, 
-  ('X',)*8, 
-  ('X',)*8, 
-  ('O','X','X','X','X',None,None,None))
-
-n = Reversi(new_board=a)
-print(list(n.legal_moves()))
-
-"""
-print_game_board(n.board)
-print('----')
-n = Reversi(not n.isMax, (3, 5), [], n.board)
-print_game_board(n.board)
-n = Reversi(not n.isMax, (4, 5), [], n.board)
-print_game_board(n.board)
-n = Reversi(not n.isMax, (5, 3), [], n.board)
-print_game_board(n.board)
-n = Reversi(not n.isMax, (4, 2), [], n.board)
-print_game_board(n.board)
-"""
 while not n.is_leaf():
   print_game_board(n.board)
   if not n.isMax:
