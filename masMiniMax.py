@@ -32,7 +32,7 @@ def minimax(node,depth):
                 min_path = C.name,path
         return min_score,min_path
 
-def minimax_alpha_beta(node,alpha=float('-inf'),beta=float('inf'),depth=0):
+def minimax_alpha_beta(node,alpha=float('-inf'),beta=float('inf'),depth=0,max_depth=float('inf')):
     """node is a Node, alpha and beta are cutoffs, depth is the depth
     returns value, path
     where path is a sequence of nodes that results in the value
@@ -42,9 +42,12 @@ def minimax_alpha_beta(node,alpha=float('-inf'),beta=float('inf'),depth=0):
     if node.is_leaf():
         node.display(2,"  "*depth,"returning leaf value",node.evaluate())
         return node.evaluate(),None
+    elif depth > max_depth:
+        node.display(2,"  "*depth,"returning max depth evaluation",node.evaluate())
+        return node.evaluate(),None
     elif node.isMax:
         for C in node.children():
-            score,path = minimax_alpha_beta(C,alpha,beta,depth+1)
+            score,path = minimax_alpha_beta(C,alpha,beta,depth+1,max_depth)
             if score >= beta:    # beta pruning
                 node.display(2,"  "*depth,"pruned due to beta=",beta,"C=",C.name)
                 return score, None 
@@ -55,7 +58,7 @@ def minimax_alpha_beta(node,alpha=float('-inf'),beta=float('inf'),depth=0):
         return alpha,best
     else:
         for C in node.children():
-            score,path = minimax_alpha_beta(C,alpha,beta,depth+1)
+            score,path = minimax_alpha_beta(C,alpha,beta,depth+1,max_depth)
             if score <= alpha:     # alpha pruning
                 node.display(2,"  "*depth,"pruned due to alpha=",alpha,"C=",C.name)
                 return score, None
