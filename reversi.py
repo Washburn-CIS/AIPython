@@ -84,15 +84,27 @@ class Reversi(Node):
     self.board = new_board
     self.isMax = isMax
 
+    # validate input
+    assert len(self.board) == 8
+    for row in self.board:
+      assert len(row)==8
+
     # process move from prior player
     if move:
+      assert coordinates_in_range(move[0], move[1])
       token = 'O' if isMax else 'X'
       self.board = update_board_from_move(move[0], move[1], token, new_board)
     
   def children(self):
     """overrides parent method to simply generate child nodes from legal moves"""
+    any_moves = False
     for move in self.legal_moves():
+      any_moves = True
       yield Reversi(not self.isMax, move, self.prior_moves, self.board)
+    if not any_moves:
+      nn = Reversi(not self.isMax,None, self.prior_moves, self.board)
+      if nn.legal_moves(): # game not over since opponent can play
+        yield nn
   
   def is_leaf(self):
     """in tic-tac-toe, this is a leaf node if there are no moves left"""
@@ -114,9 +126,12 @@ class Reversi(Node):
     # todo: add heuristic for non-leaf states
     return 0 
 
+n = Reversi()
 while not n.is_leaf():
-  print_game_board(n.board)
   if not n.isMax:
+    print('players turn')
+    print_game_board(n.board)
+    print("legal moves:", list(n.legal_moves()))
     if list(n.legal_moves()):
       move = literal_eval(input("enter move: "))
       n = Reversi(True, move, n.prior_moves, n.board)
@@ -124,9 +139,13 @@ while not n.is_leaf():
       print('player must pass')
       n = Reversi(True, None, n.prior_moves, n.board)
   else:
-    res = minimax_alpha_beta(n, max_depth=4)[1]
+    print('computers turn')
+    print_game_board(n.board)
+    print("legal moves:", list(n.legal_moves()))
+    res = minimax_alpha_beta(n, max_depth=2)
+    res = res[1]
     if res:
-      print(res)
+      print('computer chooses', res[0])
       move = literal_eval(res[0])
       n = Reversi(False, move, n.prior_moves, n.board)
     else:
@@ -136,3 +155,4 @@ while not n.is_leaf():
 print('final state:')
 print_game_board(n.board)
 print(n.evaluate())
+
