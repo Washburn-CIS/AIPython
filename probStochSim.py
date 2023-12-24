@@ -1,12 +1,12 @@
 # probStochSim.py - Probabilistic inference using stochastic simulation
-# AIFCA Python3 code Version 0.9.5 Documentation at http://aipython.org
+# AIFCA Python code Version 0.9.12 Documentation at https://aipython.org
 # Download the zip file and read aipython.pdf for documentation
 
-# Artificial Intelligence: Foundations of Computational Agents http://artint.info
-# Copyright David L Poole and Alan K Mackworth 2017-2022.
+# Artificial Intelligence: Foundations of Computational Agents https://artint.info
+# Copyright 2017-2023 David L. Poole and Alan K. Mackworth
 # This work is licensed under a Creative Commons
 # Attribution-NonCommercial-ShareAlike 4.0 International License.
-# See: http://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
+# See: https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
 
 import random
 from probGraphicalModels import InferenceMethod
@@ -168,11 +168,14 @@ class ParticleFiltering(SamplingInferenceMethod):
         for nvar in sample_order:
             fac = self.gm.var2cpt[nvar] 
             if nvar in obs:
-                weights = [fac.get_value({**part, nvar:obs[nvar]}) for part in particles]
-                particles = [{**p, nvar:obs[nvar]} for p in resample(particles, weights, number_samples)]
+                weights = [fac.get_value({**part, nvar:obs[nvar]})
+                               for part in particles]
+                particles = [{**p, nvar:obs[nvar]}
+                                 for p in resample(particles, weights, number_samples)]
             else:
                 for part in particles:
-                    part[nvar] = sample_one({v:fac.get_value({**part, nvar:v}) for v in nvar.domain})
+                    part[nvar] = sample_one({v:fac.get_value({**part, nvar:v})
+                                                 for v in nvar.domain})
                 self.display(2,part[nvar],end="\t")
         counts = {val:0 for val in qvar.domain}
         for part in particles:
@@ -201,7 +204,7 @@ def resample(particles, weights, num_samples):
         result.append(particles[index])
     return result
 
-from probGraphicalModels import bn_4ch, A,B,C,D
+from probExamples import bn_4ch, A,B,C,D
 bn_4chr = RejectionSampling(bn_4ch)
 bn_4chL = LikelihoodWeighting(bn_4ch)
 ## InferenceMethod.max_display_level = 2   # detailed tracing for all inference methods
@@ -210,7 +213,7 @@ bn_4chL = LikelihoodWeighting(bn_4ch)
 ## bn_4chr.query(A,{C:True})
 ## bn_4chr.query(B,{A:True,C:False})
 
-from probGraphicalModels import bn_report,Alarm,Fire,Leaving,Report,Smoke,Tamper
+from probExamples import bn_report,Alarm,Fire,Leaving,Report,Smoke,Tamper
 bn_reportr = RejectionSampling(bn_report)    # answers queries using rejection sampling
 bn_reportL = LikelihoodWeighting(bn_report)    # answers queries using likelihood weighting
 bn_reportp = ParticleFiltering(bn_report)    # answers queries using particle filtering
@@ -225,8 +228,8 @@ bn_reportp = ParticleFiltering(bn_report)    # answers queries using particle fi
 ## bn_reportL.query(Tamper,{Report:True,Smoke:False},number_samples=100)
 ## bn_reportL.query(Tamper,{Report:True,Smoke:False},number_samples=100)
 
-from probGraphicalModels import bn_sprinkler,Season, Sprinkler
-from probGraphicalModels import Rained, Grass_wet, Grass_shiny, Shoes_wet
+from probExamples import bn_sprinkler,Season, Sprinkler
+from probExamples import Rained, Grass_wet, Grass_shiny, Shoes_wet
 bn_sprinklerr = RejectionSampling(bn_sprinkler)    # answers queries using rejection sampling
 bn_sprinklerL = LikelihoodWeighting(bn_sprinkler)    # answers queries using rejection sampling
 bn_sprinklerp = ParticleFiltering(bn_sprinkler)    # answers queries using particle filtering
@@ -260,25 +263,24 @@ class GibbsSampling(SamplingInferenceMethod):
         qvar is a variable.
         obs is a {variable:value} dictionary.
         sample_order is a list of non-observed variables in order, or
-        if sample_order None, the variables are shuffled at each iteration.
+        if sample_order None, an arbitrary ordering is used
         """
         counts = {val:0 for val in qvar.domain}
         if sample_order is not None:
             variables = sample_order
         else:
             variables = [v for v in self.gm.variables if v not in obs]
+            random.shuffle(variables)
         var_to_factors = {v:set() for v in self.gm.variables}
         for fac in self.gm.factors:
             for var in fac.variables:
                 var_to_factors[var].add(fac)
         sample = {var:random.choice(var.domain) for var in variables}
-        self.display(2,"Sample:",sample)
+        self.display(3,"Sample:",sample)
         sample.update(obs)
         for i in range(burn_in + number_samples):
-            if sample_order == None:
-                random.shuffle(variables)
             for var in variables:
-                # get unnormalized probability distribution of var given its neighbours
+                # get unnormalized probability distribution of var given its neighbors
                 vardist = {val:1 for val in var.domain}
                 for val in var.domain: 
                     sample[var] = val
@@ -287,13 +289,15 @@ class GibbsSampling(SamplingInferenceMethod):
                 sample[var] = sample_one(vardist)
             if i >= burn_in:
                 counts[sample[qvar]] +=1
+                self.display(3,"       ",sample)
         tot = sum(counts.values())
         # as well as the computed distribution, we also include raw counts
         dist = {c:v/tot for (c,v) in counts.items()}
         dist["raw_counts"] = counts
+        self.display(2, f"Gibbs sampling P({qvar}|{obs}) = {dist}")
         return dist
 
-#from probGraphicalModels import bn_4ch, A,B,C,D
+#from probExamples import bn_4ch, A,B,C,D
 bn_4chg = GibbsSampling(bn_4ch)
 ## InferenceMethod.max_display_level = 2   # detailed tracing for all inference methods
 bn_4chg.query(A,{})
@@ -301,7 +305,7 @@ bn_4chg.query(A,{})
 ## bn_4chg.query(B,{D:True})
 ## bn_4chg.query(B,{A:True,C:False})
 
-from probGraphicalModels import bn_report,Alarm,Fire,Leaving,Report,Smoke,Tamper
+from probExamples import bn_report,Alarm,Fire,Leaving,Report,Smoke,Tamper
 bn_reportg = GibbsSampling(bn_report)
 ## bn_reportg.query(Tamper,{Report:True},number_samples=1000)
 
@@ -326,7 +330,8 @@ def plot_stats(method, qvar, qval, obs, number_runs=1000, **queryargs):
     answers = [method.query(qvar,obs,**queryargs)
                for i in range(number_runs)]
     values = [ans[qval] for ans in answers]
-    label = f"{method.method_name} P({qvar}={qval}|{','.join(f'{var}={val}' for (var,val) in obs.items())})"
+    label = f"""{method.method_name} P({qvar}={qval}|{','.join(f'{var}={val}' 
+                                                          for (var,val) in obs.items())})"""
     values.sort()
     plt.plot(values,range(number_runs),label=label)
     plt.legend() #loc="upper left")
@@ -334,20 +339,20 @@ def plot_stats(method, qvar, qval, obs, number_runs=1000, **queryargs):
     method.max_display_level = prev_mdl   # restore display level
 
 # Try:    
-# plot_stats(bn_reportr,Tamper,True,{Report:True,Smoke:True},number_samples=1000, number_runs=1000)
-# plot_stats(bn_reportL,Tamper,True,{Report:True,Smoke:True},number_samples=1000, number_runs=1000)
-# plot_stats(bn_reportp,Tamper,True,{Report:True,Smoke:True},number_samples=1000, number_runs=1000)
-# plot_stats(bn_reportr,Tamper,True,{Report:True,Smoke:True},number_samples=100, number_runs=1000)
-# plot_stats(bn_reportL,Tamper,True,{Report:True,Smoke:True},number_samples=100, number_runs=1000)
-# plot_stats(bn_reportg,Tamper,True,{Report:True,Smoke:True},number_samples=1000, number_runs=1000)
+# plot_stats(bn_reportr,Tamper,True,{Report:True,Smoke:True}, number_samples=1000, number_runs=1000)
+# plot_stats(bn_reportL,Tamper,True,{Report:True,Smoke:True}, number_samples=1000, number_runs=1000)
+# plot_stats(bn_reportp,Tamper,True,{Report:True,Smoke:True}, number_samples=1000, number_runs=1000)
+# plot_stats(bn_reportr,Tamper,True,{Report:True,Smoke:True}, number_samples=100, number_runs=1000)
+# plot_stats(bn_reportL,Tamper,True,{Report:True,Smoke:True}, number_samples=100, number_runs=1000)
+# plot_stats(bn_reportg,Tamper,True,{Report:True,Smoke:True}, number_samples=1000, number_runs=1000)
 
 def plot_mult(methods, example, qvar, qval, obs, number_samples=1000, number_runs=1000):
     for method in methods:
         solver = method(example)
         if isinstance(method,SamplingInferenceMethod):
-            plot_stats(solver, qvar, qval, obs, number_samples, number_runs)
+            plot_stats(solver, qvar, qval, obs, number_samples=number_samples, number_runs=number_runs)
         else:
-            plot_stats(solver, qvar, qval, obs, number_runs)
+            plot_stats(solver, qvar, qval, obs, number_runs=number_runs)
 
 from probRC import ProbRC
 # Try following (but it takes a while..) 

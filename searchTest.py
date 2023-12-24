@@ -1,12 +1,12 @@
 # searchTest.py - code that may be useful to compare A* and branch-and-bound
-# AIFCA Python3 code Version 0.9.5 Documentation at http://aipython.org
+# AIFCA Python code Version 0.9.12 Documentation at https://aipython.org
 # Download the zip file and read aipython.pdf for documentation
 
-# Artificial Intelligence: Foundations of Computational Agents http://artint.info
-# Copyright David L Poole and Alan K Mackworth 2017-2022.
+# Artificial Intelligence: Foundations of Computational Agents https://artint.info
+# Copyright 2017-2023 David L. Poole and Alan K. Mackworth
 # This work is licensed under a Creative Commons
 # Attribution-NonCommercial-ShareAlike 4.0 International License.
-# See: http://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
+# See: https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
 
 from searchGeneric import Searcher, AStarSearcher
 from searchBranchAndBound import DF_branch_and_bound
@@ -39,7 +39,7 @@ def run(problem,name):
 
     bbound = asearcher.solution.cost*2+10
     print("\nBranch and bound (with not-very-good initial bound of", bbound, ")")
-    tbb2 = DF_branch_and_bound(problem,bbound)  # cheating!!!!
+    tbb2 = DF_branch_and_bound(problem,bbound) 
     print("Path found:",tbb2.search(),"  cost=",tbb2.solution.cost)
     print("Rerunning B&B")
     print("Path found:",tbb2.search())
@@ -49,11 +49,11 @@ def run(problem,name):
     print("Path found:",tsearcher.search(),"  cost=",tsearcher.solution.cost)
 
 
-import searchProblem
+import searchExample
 from searchTest import run
 if __name__ == "__main__":
-    run(searchProblem.problem1,"Problem 1")
-#   run(searchProblem.acyclic_delivery_problem,"Acyclic Delivery")
-#   run(searchProblem.cyclic_delivery_problem,"Cyclic Delivery")
+    run(searchExample.problem1,"Problem 1")
+#   run(searchExample.simp_delivery_graph,"Acyclic Delivery")
+#   run(searchExample.cyclic_simp_delivery_graph,"Cyclic Delivery")
 # also test some graphs with cycles, and some with multiple least-cost paths
 

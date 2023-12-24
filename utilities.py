@@ -1,12 +1,12 @@
 # utilities.py - AIPython useful utilities
-# AIFCA Python3 code Version 0.9.5 Documentation at http://aipython.org
+# AIFCA Python code Version 0.9.12 Documentation at https://aipython.org
 # Download the zip file and read aipython.pdf for documentation
 
-# Artificial Intelligence: Foundations of Computational Agents http://artint.info
-# Copyright David L Poole and Alan K Mackworth 2017-2022.
+# Artificial Intelligence: Foundations of Computational Agents https://artint.info
+# Copyright 2017-2023 David L. Poole and Alan K. Mackworth
 # This work is licensed under a Creative Commons
 # Attribution-NonCommercial-ShareAlike 4.0 International License.
-# See: http://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
+# See: https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
 
 import random
 import math
@@ -38,7 +38,7 @@ def argmax(lst):
 # argmax([1,6,3,77,3,55,23])
 
 def argmaxd(dct):
-   """returns the arx max of a dictionary dct"""
+   """returns the arg max of a dictionary dct"""
    return argmaxe(dct.items())
 # Try:
 # arxmaxd({2:5,5:9,7:7})
@@ -46,22 +46,104 @@ def flip(prob):
     """return true with probability prob"""
     return random.random() < prob
 
-def dict_union(d1,d2):
-    """returns a dictionary that contains the keys of d1 and d2.
-    The value for each key that is in d2 is the value from d2,
-    otherwise it is the value from d1.
-    This does not have side effects.
+def select_from_dist(item_prob_dist):
+    """ returns a value from a distribution.
+    item_prob_dist is an item:probability dictionary, where the
+        probabilities sum to 1.
+    returns an item chosen in proportion to its probability
     """
-    d = dict(d1)    # copy d1
-    d.update(d2)
-    return d
+    ranreal = random.random()
+    for (it,prob) in item_prob_dist.items():
+        if ranreal < prob:
+            return it
+        else:
+            ranreal -= prob
+    raise RuntimeError(f"{item_prob_dist} is not a probability distribution")
 
 def test():
     """Test part of utilities"""
-    assert argmax(enumerate([1,6,55,3,55,23])) in [2,4]
-    assert dict_union({1:4, 2:5, 3:4},{5:7, 2:9}) == {1:4, 2:9, 3:4, 5:7} 
+    assert argmax([1,6,55,3,55,23]) in [2,4]
     print("Passed unit test in utilities")
+    print("run test_aipython() to test (almost) everything")
 
 if __name__ == "__main__":
     test()
 
+def test_aipython():
+    # Agents: currently no tests
+    # Search:
+    print("***** testing Search *****")
+    import searchGeneric, searchBranchAndBound, searchExample, searchTest
+    searchGeneric.test(searchGeneric.AStarSearcher)
+    searchBranchAndBound.test(searchBranchAndBound.DF_branch_and_bound)
+    searchTest.run(searchExample.problem1,"Problem 1")
+    # CSP
+    print("\n***** testing CSP *****")
+    import cspExamples, cspDFS, cspSearch, cspConsistency, cspSLS
+    cspExamples.test_csp(cspDFS.dfs_solve1)
+    cspExamples.test_csp(cspSearch.solver_from_searcher)
+    cspExamples.test_csp(cspConsistency.ac_solver)
+    cspExamples.test_csp(cspConsistency.ac_search_solver)
+    cspExamples.test_csp(cspSLS.sls_solver) 
+    cspExamples.test_csp(cspSLS.any_conflict_solver)
+    # Propositions
+    print("\n***** testing Propositional Logic *****")
+    import logicBottomUp, logicTopDown, logicExplain, logicNegation
+    logicBottomUp.test()
+    logicTopDown.test()
+    logicExplain.test()
+    logicNegation.test()
+    # Planning
+    print("\n***** testing Planning *****")
+    import stripsHeuristic
+    stripsHeuristic.test_forward_heuristic()
+    stripsHeuristic.test_regression_heuristic()
+    # Learning
+    print("\n***** testing Learning *****")
+    import learnProblem, learnNoInputs, learnDT, learnLinear
+    learnNoInputs.test_no_inputs(training_sizes=[4])
+    data = learnProblem.Data_from_file('data/carbool.csv', target_index=-1, seed=123)
+    learnDT.testDT(data, print_tree=False)
+    learnLinear.test()
+    # Deep Learning: currently no tests
+    # Uncertainty
+    print("\n***** testing Uncertainty *****")
+    import probGraphicalModels, probRC, probVE, probStochSim
+    probGraphicalModels.InferenceMethod.testIM(probRC.ProbSearch)
+    probGraphicalModels.InferenceMethod.testIM(probRC.ProbRC)
+    probGraphicalModels.InferenceMethod.testIM(probVE.VE)
+    probGraphicalModels.InferenceMethod.testIM(probStochSim.RejectionSampling, threshold=0.1)
+    probGraphicalModels.InferenceMethod.testIM(probStochSim.LikelihoodWeighting, threshold=0.1)
+    probGraphicalModels.InferenceMethod.testIM(probStochSim.ParticleFiltering, threshold=0.1)
+    probGraphicalModels.InferenceMethod.testIM(probStochSim.GibbsSampling, threshold=0.1)
+    # Learning under uncertainty: currently no tests
+    # Causality: currently no tests
+    # Planning under uncertainty
+    print("\n***** testing Planning under Uncertainty *****")
+    import decnNetworks
+    decnNetworks.test(decnNetworks.fire_dn)
+    import mdpExamples
+    mdpExamples.test_MDP(mdpExamples.partyMDP)
+    # Reinforement Learning:
+    print("\n***** testing Reinforcement Learning *****")
+    import rlQLearner
+    rlQLearner.test_RL(rlQLearner.Q_learner, alpha_fun=lambda k:10/(9+k))
+    import rlQExperienceReplay
+    rlQLearner.test_RL(rlQExperienceReplay.Q_ER_learner, alpha_fun=lambda k:10/(9+k))
+    import rlStochasticPolicy
+    rlQLearner.test_RL(rlStochasticPolicy.StochasticPIAgent, alpha_fun=lambda k:10/(9+k))
+    import rlModelLearner
+    rlQLearner.test_RL(rlModelLearner.Model_based_reinforcement_learner)
+    import rlFeatures
+    rlQLearner.test_RL(rlFeatures.SARSA_LFA_learner, es_kwargs={'epsilon':1}, eps=4)
+    # Multiagent systems: currently no tests
+    # Individuals and Relations
+    print("\n***** testing Datalog and Logic Programming *****")
+    import relnExamples
+    relnExamples.test_ask_all()
+    # Knowledge Graphs and Onologies
+    print("\n***** testing Knowledge Graphs and Onologies *****")
+    import knowledgeGraph
+    knowledgeGraph.test_kg()
+    # Relational Learning: currently no tests
+    

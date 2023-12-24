@@ -1,12 +1,12 @@
 # stripsProblem.py - STRIPS Representations of Actions
-# AIFCA Python3 code Version 0.9.5 Documentation at http://aipython.org
+# AIFCA Python code Version 0.9.12 Documentation at https://aipython.org
 # Download the zip file and read aipython.pdf for documentation
 
-# Artificial Intelligence: Foundations of Computational Agents http://artint.info
-# Copyright David L Poole and Alan K Mackworth 2017-2022.
+# Artificial Intelligence: Foundations of Computational Agents https://artint.info
+# Copyright 2017-2023 David L. Poole and Alan K. Mackworth
 # This work is licensed under a Creative Commons
 # Attribution-NonCommercial-ShareAlike 4.0 International License.
-# See: http://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
+# See: https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
 
 class Strips(object):
     def __init__(self, name, preconds, effects, cost=1):
@@ -50,7 +50,7 @@ class Planning_problem(object):
         self.initial_state = initial_state
         self.goal = goal
 
-boolean = {True, False}
+boolean = {False, True}
 delivery_domain = STRIPS_domain(
     {'RLoc':{'cs', 'off', 'lab', 'mr'}, 'RHC':boolean, 'SWC':boolean,
      'MW':boolean, 'RHM':boolean},           #feature:values dictionary

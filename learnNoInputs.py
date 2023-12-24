@@ -1,12 +1,12 @@
 # learnNoInputs.py - Learning ignoring all input features
-# AIFCA Python3 code Version 0.9.5 Documentation at http://aipython.org
+# AIFCA Python code Version 0.9.12 Documentation at https://aipython.org
 # Download the zip file and read aipython.pdf for documentation
 
-# Artificial Intelligence: Foundations of Computational Agents http://artint.info
-# Copyright David L Poole and Alan K Mackworth 2017-2022.
+# Artificial Intelligence: Foundations of Computational Agents https://artint.info
+# Copyright 2017-2023 David L. Poole and Alan K. Mackworth
 # This work is licensed under a Creative Commons
 # Attribution-NonCommercial-ShareAlike 4.0 International License.
-# See: http://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
+# See: https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
 
 from learnProblem import Evaluate
 import math, random, collections, statistics
@@ -80,8 +80,9 @@ class Predict(object):
     select = {"boolean": [empirical, bounded_empirical, laplace, cmode, cmedian],
               "categorical": [empirical, bounded_empirical, laplace, cmode, cmedian],
               "numeric": [mean, rmean, mode, median]}
-def test_no_inputs(error_measures = Evaluate.all_criteria, num_samples=10000, test_size=10 ):
-    for train_size in [1,2,3,4,5,10,20,100,1000]:
+def test_no_inputs(error_measures = Evaluate.all_criteria, num_samples=10000,
+                       test_size=10,  training_sizes= [1,2,3,4,5,10,20,100,1000]):
+    for train_size in training_sizes:
         results = {predictor: {error_measure: 0 for error_measure in error_measures}
                         for predictor in Predict.all}
         for sample in range(num_samples):

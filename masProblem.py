@@ -1,12 +1,12 @@
 # masProblem.py - A Multiagent Problem
-# AIFCA Python3 code Version 0.9.5 Documentation at http://aipython.org
+# AIFCA Python code Version 0.9.12 Documentation at https://aipython.org
 # Download the zip file and read aipython.pdf for documentation
 
-# Artificial Intelligence: Foundations of Computational Agents http://artint.info
-# Copyright David L Poole and Alan K Mackworth 2017-2022.
+# Artificial Intelligence: Foundations of Computational Agents https://artint.info
+# Copyright 2017-2023 David L. Poole and Alan K. Mackworth
 # This work is licensed under a Creative Commons
 # Attribution-NonCommercial-ShareAlike 4.0 International License.
-# See: http://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
+# See: https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
 
 from display import Displayable
 
@@ -17,22 +17,56 @@ class Node(Displayable):
     children is the list of children
     value is what it evaluates to if it is a leaf.
     """
-    def __init__(self, name, isMax):
+    def __init__(self, name, isMax, value, children):
         self.name = name
         self.isMax = isMax
+        self.value = value
+        self.allchildren = children
         
-    def is_leaf(self):
+    def isLeaf(self):
         """returns true of this is a leaf node"""
-        return len(children) == 0
+        return self.allchildren is None
     
     def children(self):
         """returns the list of all children."""
-        raise NotImplementedError()
+        return self.allchildren
     
     def evaluate(self):
         """returns the evaluation for this node if it is a leaf"""
-        raise NotImplementedError()
-        
+        return self.value
+
+fig10_5 = Node("a",True,None, [
+            Node("b",False,None, [
+                Node("d",True,None, [
+                    Node("h",False,None, [
+                        Node("h1",True,7,None),
+                        Node("h2",True,9,None)]),
+                    Node("i",False,None, [
+                        Node("i1",True,6,None),
+                        Node("i2",True,888,None)])]),
+                Node("e",True,None, [
+                    Node("j",False,None, [
+                        Node("j1",True,11,None),
+                        Node("j2",True,12,None)]),
+                    Node("k",False,None, [
+                        Node("k1",True,888,None),
+                        Node("k2",True,888,None)])])]),
+            Node("c",False,None, [
+                Node("f",True,None, [
+                    Node("l",False,None, [
+                        Node("l1",True,5,None),
+                        Node("l2",True,888,None)]),
+                    Node("m",False,None, [
+                        Node("m1",True,4,None),
+                        Node("m2",True,888,None)])]),
+                Node("g",True,None, [
+                    Node("n",False,None, [
+                        Node("n1",True,888,None),
+                        Node("n2",True,888,None)]),
+                    Node("o",False,None, [
+                        Node("o1",True,888,None),
+                        Node("o2",True,888,None)])])])])
+                        
 
 class Magic_sum(Node):
     def __init__(self, xmove=True, last_move=None,
@@ -73,7 +107,7 @@ class Magic_sum(Node):
                             for sel in self.available]
         return self.allchildren
 
-    def is_leaf(self):
+    def isLeaf(self):
         """A leaf has no numbers available or is a win for one of the players.
         We only need to check for a win for o if it is currently x's turn,
         and only check for a win for x if it is o's turn (otherwise it would
@@ -93,7 +127,7 @@ class Magic_sum(Node):
             return 0
             
 def sum_to_15(last,selected):
-    """is true if last, toegether with two other elements of selected sum to 15.
+    """is true if last, together with two other elements of selected sum to 15.
     """
     return any(last+a+b == 15
                for a in selected if a != last

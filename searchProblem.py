@@ -1,14 +1,18 @@
 # searchProblem.py - representations of search problems
-# AIFCA Python3 code Version 0.9.5 Documentation at http://aipython.org
+# AIFCA Python code Version 0.9.12 Documentation at https://aipython.org
 # Download the zip file and read aipython.pdf for documentation
 
-# Artificial Intelligence: Foundations of Computational Agents http://artint.info
-# Copyright David L Poole and Alan K Mackworth 2017-2022.
+# Artificial Intelligence: Foundations of Computational Agents https://artint.info
+# Copyright 2017-2023 David L. Poole and Alan K. Mackworth
 # This work is licensed under a Creative Commons
 # Attribution-NonCommercial-ShareAlike 4.0 International License.
-# See: http://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
+# See: https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
 
-class Search_problem(object):
+from display import Displayable
+import matplotlib.pyplot as plt
+import random
+
+class Search_problem(Displayable):
     """A search problem consists of:
     * a start node
     * a neighbors function that gives the neighbors of a node
@@ -25,7 +29,7 @@ class Search_problem(object):
         raise NotImplementedError("is_goal")   # abstract method
 
     def neighbors(self,node):
-        """returns a list of the arcs for the neighbors of node"""
+        """returns a list (or enumeration) of the arcs for the neighbors of node"""
         raise NotImplementedError("neighbors")   # abstract method
 
     def heuristic(self,n):
@@ -36,31 +40,35 @@ class Search_problem(object):
 class Arc(object):
     """An arc has a from_node and a to_node node and a (non-negative) cost"""
     def __init__(self, from_node, to_node, cost=1, action=None):
-        assert cost >= 0, ("Cost cannot be negative for"+
-                           str(from_node)+"->"+str(to_node)+", cost: "+str(cost))
         self.from_node = from_node
         self.to_node = to_node
         self.action = action
-        self.cost=cost
+        self.cost = cost
+        assert cost >= 0, (f"Cost cannot be negative: {self}, cost={cost}")
 
     def __repr__(self):
         """string representation of an arc"""
         if self.action:
-            return str(self.from_node)+" --"+str(self.action)+"--> "+str(self.to_node)
+            return f"{self.from_node} --{self.action}--> {self.to_node}"
         else:
-            return str(self.from_node)+" --> "+str(self.to_node)
+            return f"{self.from_node} --> {self.to_node}"
 
 class Search_problem_from_explicit_graph(Search_problem):
-    """A search problem consists of:
-    * a list or set of nodes
-    * a list or set of arcs
-    * a start node
-    * a list or set of goal nodes
-    * a dictionary that maps each node into its heuristic value.
-    * a dictionary that maps each node into its (x,y) position
+    """A search problem from an explicit graph.
     """
 
-    def __init__(self, nodes, arcs, start=None, goals=set(), hmap={}, positions={}):
+    def __init__(self, title, nodes, arcs, start=None, goals=set(), hmap={},
+                     positions=None, show_costs = True):
+        """ A search problem consists of:
+        * list or set of nodes
+        * list or set of arcs
+        * start node
+        * list or set of goal nodes
+        * hmap: dictionary that maps each node into its heuristic value.
+        * positions: dictionary that maps each node into its (x,y) position
+        * show_costs is used for show()
+        """
+        self.title = title
         self.neighs = {}
         self.nodes = nodes
         for node in nodes:
@@ -71,7 +79,12 @@ class Search_problem_from_explicit_graph(Search_problem):
         self.start = start
         self.goals = goals
         self.hmap = hmap
-        self.positions = positions
+        if positions is None:
+            self.positions = {node:(random.random(),random.random()) for node in nodes}
+        else:
+            self.positions = positions
+        self.show_costs = show_costs
+
 
     def start_node(self):
         """returns start node"""
@@ -82,7 +95,7 @@ class Search_problem_from_explicit_graph(Search_problem):
         return node in self.goals
 
     def neighbors(self,node):
-        """returns the neighbors of node"""
+        """returns the neighbors of node (a list of arcs)"""
         return self.neighs[node]
 
     def heuristic(self,node):
@@ -97,12 +110,49 @@ class Search_problem_from_explicit_graph(Search_problem):
         """returns a string representation of the search problem"""
         res=""
         for arc in self.arcs:
-            res += str(arc)+".  "
+            res += f"{arc}.  "
         return res
 
-    def neighbor_nodes(self,node):
-        """returns an iterator over the neighbors of node"""
-        return (path.to_node for path in self.neighs[node])
+    def show(self, fontsize=10, node_color='orange', show_costs = None):
+        """Show the graph as a figure
+        """
+        self.fontsize = fontsize
+        if show_costs is not None: # override default definition
+            self.show_costs = show_costs
+        plt.ion()   # interactive
+        ax = plt.figure().gca()
+        ax.set_axis_off()
+        plt.title(self.title, fontsize=fontsize)
+        self.show_graph(ax, node_color)
+
+    def show_graph(self, ax, node_color='orange'): 
+        bbox = dict(boxstyle="round4,pad=1.0,rounding_size=0.5",facecolor=node_color)
+        for arc in self.arcs:
+            self.show_arc(ax, arc)
+        for node in self.nodes:
+            self.show_node(ax, node, node_color = node_color)
+
+    def show_node(self, ax, node, node_color):
+            x,y = self.positions[node]
+            ax.text(x,y,node,bbox=dict(boxstyle="round4,pad=1.0,rounding_size=0.5",
+                                                  facecolor=node_color), ha='center',va='center',
+                         fontsize=self.fontsize)
+        
+    def show_arc(self, ax, arc, arc_color='black', node_color='white'):
+            from_pos = self.positions[arc.from_node]
+            to_pos = self.positions[arc.to_node]
+            ax.annotate(arc.to_node, from_pos, xytext=to_pos,
+                                # arrowprops=dict(facecolor='black', shrink=0.1, width=2),
+                                arrowprops={'arrowstyle':'<|-', 'linewidth': 2, 'color':arc_color},
+                                bbox=dict(boxstyle="round4,pad=1.0,rounding_size=0.5",
+                                                 facecolor=node_color),
+                                ha='center',va='center',
+                                fontsize=self.fontsize)
+            # Add costs to middle of arcs:
+            if self.show_costs:
+                ax.text((from_pos[0]+to_pos[0])/2, (from_pos[1]+to_pos[1])/2,
+                         arc.cost, bbox=dict(pad=1,fc='w',ec='w'),
+                         ha='center',va='center',fontsize=self.fontsize)
 
 class Path(object):
     """A path is either a node or a path followed by an arc"""
@@ -126,7 +176,8 @@ class Path(object):
 
     def nodes(self):
         """enumerates the nodes for the path.
-        This starts at the end and enumerates nodes in the path backwards."""
+        This enumerates the nodes in the path from the last elements backwards.
+        """
         current = self
         while current.arc is not None:
             yield current.arc.to_node
@@ -135,7 +186,8 @@ class Path(object):
 
     def initial_nodes(self):
         """enumerates the nodes for the path before the end node.
-        This starts at the end and enumerates nodes in the path backwards."""
+        This calls nodes() for the initial part of the path.
+        """
         if self.arc is not None:
             yield from self.initial.nodes()
         
@@ -144,120 +196,7 @@ class Path(object):
         if self.arc is None:
             return str(self.initial)
         elif self.arc.action:
-            return (str(self.initial)+"\n   --"+str(self.arc.action)
-                    +"--> "+str(self.arc.to_node))
+            return f"{self.initial}\n   --{self.arc.action}--> {self.arc.to_node}"
         else:
-            return str(self.initial)+" --> "+str(self.arc.to_node)
-
-problem1 = Search_problem_from_explicit_graph(
-    {'a','b','c','d','g'},
-    [Arc('a','c',1), Arc('a','b',3), Arc('c','d',3), Arc('c','b',1),
-        Arc('b','d',1), Arc('b','g',3), Arc('d','g',1)],
-    start = 'a',
-    goals = {'g'},
-    positions={'a': (0, 0), 'b': (1, 1), 'c': (0,1), 'd': (1,2), 'g': (2,2)})
-problem2 = Search_problem_from_explicit_graph(
-    {'a','b','c','d','e','g','h','j'},
-    [Arc('a','b',1), Arc('b','c',3), Arc('b','d',1), Arc('d','e',3),
-        Arc('d','g',1), Arc('a','h',3), Arc('h','j',1)],
-    start = 'a',
-    goals = {'g'},
-    positions={'a': (0, 0), 'b': (0, 1), 'c': (0,4), 'd': (1,1), 'e': (1,4),
-                   'g': (2,1), 'h': (3,0), 'j': (3,1)})
-
-problem3 = Search_problem_from_explicit_graph(
-    {'a','b','c','d','e','g','h','j'},
-    [],
-    start = 'g',
-    goals = {'k','g'})
-
-acyclic_delivery_problem = Search_problem_from_explicit_graph(
-    {'mail','ts','o103','o109','o111','b1','b2','b3','b4','c1','c2','c3',
-     'o125','o123','o119','r123','storage'},
-     [Arc('ts','mail',6),
-        Arc('o103','ts',8),
-        Arc('o103','b3',4),
-        Arc('o103','o109',12),
-        Arc('o109','o119',16),
-        Arc('o109','o111',4),
-        Arc('b1','c2',3),
-        Arc('b1','b2',6),
-        Arc('b2','b4',3),
-        Arc('b3','b1',4),
-        Arc('b3','b4',7),
-        Arc('b4','o109',7),
-        Arc('c1','c3',8),
-        Arc('c2','c3',6),
-        Arc('c2','c1',4),
-        Arc('o123','o125',4),
-        Arc('o123','r123',4),
-        Arc('o119','o123',9),
-        Arc('o119','storage',7)],
-    start = 'o103',
-    goals = {'r123'},
-    hmap = {
-        'mail' : 26,
-        'ts' : 23,
-        'o103' : 21,
-        'o109' : 24,
-        'o111' : 27,
-        'o119' : 11,
-        'o123' : 4,
-        'o125' : 6,
-        'r123' : 0,
-        'b1' : 13,
-        'b2' : 15,
-        'b3' : 17,
-        'b4' : 18,
-        'c1' : 6,
-        'c2' : 10,
-        'c3' : 12,
-        'storage' : 12
-        }
-    )
-
-cyclic_delivery_problem = Search_problem_from_explicit_graph(
-    {'mail','ts','o103','o109','o111','b1','b2','b3','b4','c1','c2','c3',
-     'o125','o123','o119','r123','storage'},
-     [  Arc('ts','mail',6), Arc('mail','ts',6),
-        Arc('o103','ts',8), Arc('ts','o103',8),
-        Arc('o103','b3',4), 
-        Arc('o103','o109',12), Arc('o109','o103',12),
-        Arc('o109','o119',16), Arc('o119','o109',16),
-        Arc('o109','o111',4), Arc('o111','o109',4),
-        Arc('b1','c2',3),
-        Arc('b1','b2',6), Arc('b2','b1',6),
-        Arc('b2','b4',3), Arc('b4','b2',3),
-        Arc('b3','b1',4), Arc('b1','b3',4),
-        Arc('b3','b4',7), Arc('b4','b3',7),
-        Arc('b4','o109',7), 
-        Arc('c1','c3',8), Arc('c3','c1',8),
-        Arc('c2','c3',6), Arc('c3','c2',6),
-        Arc('c2','c1',4), Arc('c1','c2',4),
-        Arc('o123','o125',4), Arc('o125','o123',4),
-        Arc('o123','r123',4), Arc('r123','o123',4),
-        Arc('o119','o123',9), Arc('o123','o119',9),
-        Arc('o119','storage',7), Arc('storage','o119',7)],
-    start = 'o103',
-    goals = {'r123'},
-    hmap = {
-        'mail' : 26,
-        'ts' : 23,
-        'o103' : 21,
-        'o109' : 24,
-        'o111' : 27,
-        'o119' : 11,
-        'o123' : 4,
-        'o125' : 6,
-        'r123' : 0,
-        'b1' : 13,
-        'b2' : 15,
-        'b3' : 17,
-        'b4' : 18,
-        'c1' : 6,
-        'c2' : 10,
-        'c3' : 12,
-        'storage' : 12
-        }
-    )
+            return f"{self.initial} --> {self.arc.to_node}"
 

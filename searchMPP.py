@@ -1,14 +1,14 @@
 # searchMPP.py - Searcher with multiple-path pruning
-# AIFCA Python3 code Version 0.9.5 Documentation at http://aipython.org
+# AIFCA Python code Version 0.9.12 Documentation at https://aipython.org
 # Download the zip file and read aipython.pdf for documentation
 
-# Artificial Intelligence: Foundations of Computational Agents http://artint.info
-# Copyright David L Poole and Alan K Mackworth 2017-2022.
+# Artificial Intelligence: Foundations of Computational Agents https://artint.info
+# Copyright 2017-2023 David L. Poole and Alan K. Mackworth
 # This work is licensed under a Creative Commons
 # Attribution-NonCommercial-ShareAlike 4.0 International License.
-# See: http://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
+# See: https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
 
-from searchGeneric import AStarSearcher, visualize
+from searchGeneric import AStarSearcher
 from searchProblem import Path
 
 class SearcherMPP(AStarSearcher):
@@ -19,37 +19,37 @@ class SearcherMPP(AStarSearcher):
         super().__init__(problem)
         self.explored = set()
 
-    @visualize
     def search(self):
         """returns next path from an element of problem's start nodes
         to a goal node. 
         Returns None if no path exists.
         """
         while not self.empty_frontier():
-            path = self.frontier.pop()
-            if path.end() not in self.explored:
-                self.display(2, "Expanding:",path,"(cost:",path.cost,")")
-                self.explored.add(path.end())
+            self.path = self.frontier.pop()
+            if self.path.end() not in self.explored:
+                self.explored.add(self.path.end())
                 self.num_expanded += 1
-                if self.problem.is_goal(path.end()):
-                    self.display(1, self.num_expanded, "paths have been expanded and",
+                if self.problem.is_goal(self.path.end()):
+                    self.solution = self.path   # store the solution found
+                    self.display(1, f"Solution: {self.path} (cost: {self.path.cost})\n",
+                    self.num_expanded, "paths have been expanded and",
                             len(self.frontier), "paths remain in the frontier")
-                    self.solution = path   # store the solution found
-                    return path
+                    return self.path
                 else:
-                    neighs = self.problem.neighbors(path.end())
-                    self.display(3,"Neighbors are", neighs)
+                    self.display(4,f"Expanding: {self.path} (cost: {self.path.cost})")
+                    neighs = self.problem.neighbors(self.path.end())
+                    self.display(2,f"Expanding: {self.path} with neighbors {neighs}")
                     for arc in neighs:
-                        self.add_to_frontier(Path(path,arc))
-                    self.display(3,"Frontier:",self.frontier)
-        self.display(1,"No (more) solutions. Total of",
+                        self.add_to_frontier(Path(self.path,arc))
+                    self.display(3, f"New frontier: {[p.end() for p in self.frontier]}")
+        self.display(0,"No (more) solutions. Total of",
                      self.num_expanded,"paths expanded.")
 
 from searchGeneric import test
 if __name__ == "__main__":
     test(SearcherMPP)
 
-import searchProblem
-# searcherMPPcdp = SearcherMPP(searchProblem.cyclic_delivery_problem)
-# print(searcherMPPcdp.search())  # find first path
+import searchExample
+# searcherMPPcdp = SearcherMPP(searchExample.cyclic_simp_delivery_graph)
+# searcherMPPcdp.search()  # find first path
 

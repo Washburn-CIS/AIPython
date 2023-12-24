@@ -1,12 +1,12 @@
 # probFactors.py - Factors for graphical models
-# AIFCA Python3 code Version 0.9.5 Documentation at http://aipython.org
+# AIFCA Python code Version 0.9.12 Documentation at https://aipython.org
 # Download the zip file and read aipython.pdf for documentation
 
-# Artificial Intelligence: Foundations of Computational Agents http://artint.info
-# Copyright David L Poole and Alan K Mackworth 2017-2022.
+# Artificial Intelligence: Foundations of Computational Agents https://artint.info
+# Copyright 2017-2023 David L. Poole and Alan K. Mackworth
 # This work is licensed under a Creative Commons
 # Attribution-NonCommercial-ShareAlike 4.0 International License.
-# See: http://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
+# See: https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
 
 from display import Displayable
 import math
@@ -14,11 +14,13 @@ import math
 class Factor(Displayable):
     nextid=0  # each factor has a unique identifier; for printing
 
-    def __init__(self,variables):
-        self.variables = variables   # ordered list of variables
-        self.id = Factor.nextid
-        self.name = f"f{self.id}"
-        Factor.nextid += 1
+    def __init__(self, variables, name=None):
+        self.variables = variables   # list of variables
+        if name:
+            self.name = name
+        else:
+            self.name = f"f{Factor.nextid}"
+            Factor.nextid += 1
         
     def can_evaluate(self,assignment):
         """True when the factor can be evaluated in the assignment
@@ -46,7 +48,7 @@ class Factor(Displayable):
             variables = [v for v in self.variables if v not in given]
         else:  #enforce ordering and allow for extra variables in ordering
             variables = [v for v in variables if v in self.variables and v not in given]
-        head = "\t".join(str(v) for v in variables)
+        head = "\t".join(str(v) for v in variables)+"\t"+self.name
         return head+"\n"+self.ass_to_str(variables, given, variables)
 
     def ass_to_str(self, vars, asst, allvars):
@@ -55,8 +57,10 @@ class Factor(Displayable):
             return "\n".join(self.ass_to_str(vars[1:], {**asst, vars[0]:val}, allvars)
                             for val in vars[0].domain)
         else:
+            val = self.get_value(asst)
+            val_st =  "{:.6f}".format(val) if isinstance(val,float) else str(val)
             return ("\t".join(str(asst[var]) for var in allvars)
-                        + "\t"+"{:.6f}".format(self.get_value(asst)) )
+                        + "\t"+val_st)
         
     __repr__ = __str__
         
@@ -66,7 +70,7 @@ class CPD(Factor):
         """
         self.parents = parents
         self.child = child
-        Factor.__init__(self, parents+[child])
+        Factor.__init__(self, parents+[child], name=f"Probability")
 
     def __str__(self):
         """A brief description of a factor using in tracing"""
@@ -128,12 +132,10 @@ class NoisyOR(CPD):
         else:
             return probfalse
 
-from functools import reduce
-
 class TabFactor(Factor):
     
-    def __init__(self, variables, values):
-        Factor.__init__(self, variables)
+    def __init__(self, variables, values, name=None):
+        Factor.__init__(self, variables, name=name)
         self.values = values
 
     def get_value(self,  assignment):
@@ -148,13 +150,73 @@ class TabFactor(Factor):
 
 class Prob(CPD,TabFactor):
     """A factor defined by a conditional probability table"""
-    def __init__(self,var,pars,cpt):
+    def __init__(self, var, pars, cpt, name=None):
         """Creates a factor from a conditional probability table, cpt 
         The cpt values are assumed to be for the ordering par+[var]
         """
-        TabFactor.__init__(self,pars+[var],cpt)
+        TabFactor.__init__(self, pars+[var], cpt, name)
         self.child = var
         self.parents = pars
+
+class ProbDT(CPD):
+    def __init__(self, child, parents, dt):
+        CPD.__init__(self, child, parents)
+        self.dt = dt
+
+    def get_value(self, assignment):
+        return self.dt.get_value(assignment, self.child)
+
+    def can_evaluate(self, assignment):
+        return self.child in assignment and self.dt.can_evaluate(assignment)
+
+class IFeq:
+    def __init__(self, var, val, true_cond, false_cond):
+        self.var = var
+        self.val = val
+        self.true_cond = true_cond
+        self.false_cond = false_cond
+
+    def get_value(self, assignment, child):
+        if assignment[self.var] == self.val:
+            return self.true_cond.get_value(assignment, child)
+        else:
+            return self.false_cond.get_value(assignment,child)
+
+    def can_evaluate(self, assignment):
+        if self.var not in assignment:
+            return False
+        elif assignment[self.var] == self.val:
+            return self.true_cond.can_evaluate(assignment)
+        else:
+            return self.false_cond.can_evaluate(assignment)
+
+class Dist:
+    def __init__(self, dist):
+        """Dist is an arror or dictionary indexed by value of current child"""
+        self.dist = dist
+
+    def get_value(self, assignment, child):
+        return self.dist[assignment[child]]
+
+    def can_evaluate(self, assignment):
+        return True  
+
+##### A decision tree representation Example 9.18 of AIFCA 3e
+from variable import Variable
+
+boolean = [False, True]
+
+action = Variable('Action', ['go_out', 'get_coffee'], position=(0.5,0.8))
+rain = Variable('Rain', boolean, position=(0.2,0.8))
+full = Variable('Cup Full', boolean, position=(0.8,0.8))
+
+wet = Variable('Wet', boolean, position=(0.5,0.2))
+p_wet = ProbDT(wet,[action,rain,full],
+                   IFeq(action, 'go_out',
+                            IFeq(rain, True, Dist([0.2,0.8]), Dist([0.9,0.1])),
+                            IFeq(full, True, Dist([0.4,0.6]), Dist([0.7,0.3]))))
+
+# See probRC for wetBN which expands this example to a complete network
 
 class FactorObserved(Factor):
     def __init__(self,factor,obs):
@@ -163,20 +225,18 @@ class FactorObserved(Factor):
         self.orig_factor = factor
 
     def get_value(self,assignment):
-        ass = assignment.copy()
-        for ob in self.observed:
-            ass[ob]=self.observed[ob]
-        return self.orig_factor.get_value(ass)
+        return self.orig_factor.get_value(assignment|self.observed)
 
 class FactorSum(Factor):
     def __init__(self,var,factors):
         self.var_summed_out = var
         self.factors = factors
-        vars = []
-        for fac in factors:
-            for v in fac.variables:
-                if v is not var and v not in vars:
-                    vars.append(v)
+        vars = list({v for fac in factors
+                       for v in fac.variables if v is not var})
+        #for fac in factors:
+        #    for v in fac.variables:
+        #        if v is not var and v not in vars:
+        #            vars.append(v)
         Factor.__init__(self,vars)
         self.values = {}
 

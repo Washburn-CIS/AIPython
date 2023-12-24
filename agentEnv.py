@@ -1,14 +1,15 @@
 # agentEnv.py - Agent environment
-# AIFCA Python3 code Version 0.9.5 Documentation at http://aipython.org
+# AIFCA Python code Version 0.9.12 Documentation at https://aipython.org
 # Download the zip file and read aipython.pdf for documentation
 
-# Artificial Intelligence: Foundations of Computational Agents http://artint.info
-# Copyright David L Poole and Alan K Mackworth 2017-2022.
+# Artificial Intelligence: Foundations of Computational Agents https://artint.info
+# Copyright 2017-2023 David L. Poole and Alan K. Mackworth
 # This work is licensed under a Creative Commons
 # Attribution-NonCommercial-ShareAlike 4.0 International License.
-# See: http://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
+# See: https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
 
 import math
+from display import Displayable 
 from agents import Environment
 
 class Rob_env(Environment):
@@ -42,17 +43,17 @@ class Rob_body(Environment):
         self.history = [(self.rob_x, self.rob_y)] # history of (x,y) positions
         self.wall_history = []     # history of hitting the wall
 
-    def percepts(self):
+    def percept(self):
         return {'rob_x_pos':self.rob_x, 'rob_y_pos':self.rob_y,
-                'rob_dir':self.rob_dir, 'whisker':self.whisker() , 'crashed':self.crashed}
-    initial_percepts = percepts  # use percept function for initial percepts too
+                'rob_dir':self.rob_dir, 'whisker':self.whisker(), 'crashed':self.crashed}
+    initial_percept = percept  # use percept function for initial percept too
 
     def do(self,action):
         """ action is {'steer':direction}
         direction is 'left', 'right' or 'straight'
         """
         if self.crashed:
-            return self.percepts()
+            return self.percept()
         direction = action['steer']  
         compass_deriv = {'left':1,'straight':0,'right':-1}[direction]*self.turning_angle
         self.rob_dir = (self.rob_dir + compass_deriv +360)%360  # make in range [0,360)
@@ -70,7 +71,7 @@ class Rob_body(Environment):
             plt.plot([self.rob_x],[self.rob_y],"go")
             plt.draw()
             plt.pause(self.sleep_time)
-        return self.percepts()
+        return self.percept()
 
     def whisker(self):
         """returns true whenever the whisker sensor intersects with a wall

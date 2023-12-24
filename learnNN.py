@@ -1,12 +1,12 @@
 # learnNN.py - Neural Network Learning
-# AIFCA Python3 code Version 0.9.5 Documentation at http://aipython.org
+# AIFCA Python code Version 0.9.12 Documentation at https://aipython.org
 # Download the zip file and read aipython.pdf for documentation
 
-# Artificial Intelligence: Foundations of Computational Agents http://artint.info
-# Copyright David L Poole and Alan K Mackworth 2017-2022.
+# Artificial Intelligence: Foundations of Computational Agents https://artint.info
+# Copyright 2017-2023 David L. Poole and Alan K. Mackworth
 # This work is licensed under a Creative Commons
 # Attribution-NonCommercial-ShareAlike 4.0 International License.
-# See: http://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
+# See: https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
 
 from learnProblem import Learner, Data_set, Data_from_file, Data_from_files, Evaluate
 from learnLinear import sigmoid, one, softmax, indicator
@@ -321,87 +321,86 @@ class Dropout_layer_0(Layer):
 
 #data = Data_from_file('data/mail_reading.csv', target_index=-1)
 #data = Data_from_file('data/mail_reading_consis.csv', target_index=-1)
-data = Data_from_file('data/SPECT.csv',  prob_test=0.5, target_index=0)
+data = Data_from_file('data/SPECT.csv',  prob_test=0.3, target_index=0, seed=12345)
 #data = Data_from_file('data/iris.data', prob_test=0.2, target_index=-1) # 150 examples approx 120 test + 30 test
 #data = Data_from_file('data/if_x_then_y_else_z.csv', num_train=8, target_index=-1) # not linearly sep
 #data = Data_from_file('data/holiday.csv', target_index=-1) #, num_train=19)
 #data = Data_from_file('data/processed.cleveland.data', target_index=-1)
-random.seed(None)
+#random.seed(None)
 
-nn1 = NN(data, validation_proportion = 0)
-nn1.add_layer(Linear_complete_layer(nn1,3))
-#nn1.add_layer(Sigmoid_layer(nn1))  # comment this or the next
-nn1.add_layer(ReLU_layer(nn1))
-nn1.add_layer(Linear_complete_layer(nn1,1)) # when using output_type="boolean"
-#nn1.add_layer(Linear_complete_layer(nn1,1)) # when using output_type="categorical" 
-#nn1.learn(epochs = 100)
+# nn3 is has a single hidden layer of width 3
+nn3 = NN(data, validation_proportion = 0)
+nn3.add_layer(Linear_complete_layer(nn3,3))
+#nn3.add_layer(Sigmoid_layer(nn3))  
+nn3.add_layer(ReLU_layer(nn3))
+nn3.add_layer(Linear_complete_layer(nn3,1)) # when using output_type="boolean"
+#nn3.learn(epochs = 100)
 
-nn1do = NN(data)
-nn1do.add_layer(Linear_complete_layer(nn1do,3))
-#nn1.add_layer(Sigmoid_layer(nn1))  # comment this or the next
-nn1do.add_layer(ReLU_layer(nn1do))
-nn1do.add_layer(Dropout_layer(nn1do, rate=0.5))
-#nn1.add_layer(Linear_complete_layer(nn1do,1)) # when using output_type="boolean"
-nn1do.add_layer(Linear_complete_layer(nn1do,1)) # when using output_type="categorical" 
-#nn1do.learn(epochs = 100)
+# nn3do is like nn3 but with dropout on the hidden layer
+nn3do = NN(data, validation_proportion = 0)
+nn3do.add_layer(Linear_complete_layer(nn3do,3))
+#nn3.add_layer(Sigmoid_layer(nn3))  # comment this or the next
+nn3do.add_layer(ReLU_layer(nn3do))
+nn3do.add_layer(Dropout_layer(nn3do, rate=0.5))
+nn3do.add_layer(Linear_complete_layer(nn3do,1))
+#nn3do.learn(epochs = 100)
 
+# nn3_rmsp is like nn3 but uses RMS prop
+nn3_rmsp = NN(data, validation_proportion = 0)
+nn3_rmsp.add_layer(Linear_complete_layer_RMS_Prop(nn3_rmsp,3))
+#nn3_rmsp.add_layer(Sigmoid_layer(nn3_rmsp))  # comment this or the next
+nn3_rmsp.add_layer(ReLU_layer(nn3_rmsp)) 
+nn3_rmsp.add_layer(Linear_complete_layer_RMS_Prop(nn3_rmsp,1)) 
+#nn3_rmsp.learn(epochs = 100)
 
-nn_r1 = NN(data)
-nn_r1.add_layer(Linear_complete_layer_RMS_Prop(nn_r1,3))
-#nn_r1.add_layer(Sigmoid_layer(nn_r1))  # comment this or the next
-nn_r1.add_layer(ReLU_layer(nn_r1)) 
-#nn_r1.add_layer(Linear_complete_layer(nn_r1,1)) # when using output_type="boolean"
-nn_r1.add_layer(Linear_complete_layer_RMS_Prop(nn_r1,1)) # when using output_type="categorical" 
-#nn_r1.learn(epochs = 100)
+# nn3_m is like nn3 but uses momentum
+mm1_m = NN(data, validation_proportion = 0)
+mm1_m.add_layer(Linear_complete_layer_momentum(mm1_m,3))
+#mm1_m.add_layer(Sigmoid_layer(mm1_m))  # comment this or the next
+mm1_m.add_layer(ReLU_layer(mm1_m)) 
+mm1_m.add_layer(Linear_complete_layer_momentum(mm1_m,1)) 
+#mm1_m.learn(epochs = 100)
 
-
-nnm1 = NN(data)
-nnm1.add_layer(Linear_complete_layer_momentum(nnm1,3))
-#nnm1.add_layer(Sigmoid_layer(nnm1))  # comment this or the next
-nnm1.add_layer(ReLU_layer(nnm1)) 
-#nnm1.add_layer(Linear_complete_layer(nnm1,1)) # when using output_type="boolean"
-nnm1.add_layer(Linear_complete_layer_momentum(nnm1,1)) # when using output_type="categorical" 
-#nnm1.learn(epochs = 100)
-
-
-nn2 = NN(data) #"boolean") #
+# nn2 has a single a hidden layer of width 2
+nn2 = NN(data, validation_proportion = 0)
 nn2.add_layer(Linear_complete_layer_RMS_Prop(nn2,2))
 nn2.add_layer(ReLU_layer(nn2)) 
-nn2.add_layer(Linear_complete_layer_RMS_Prop(nn2,1)) # when using output_type="categorical" 
+nn2.add_layer(Linear_complete_layer_RMS_Prop(nn2,1)) 
 
-nn3 = NN(data) #"boolean") #
-nn3.add_layer(Linear_complete_layer_RMS_Prop(nn3,5))
-nn3.add_layer(ReLU_layer(nn3)) 
-nn3.add_layer(Linear_complete_layer_RMS_Prop(nn3,1)) # when using output_type="categorical" 
+# nn5 is has a single hidden layer of width 5
+nn5 = NN(data, validation_proportion = 0) 
+nn5.add_layer(Linear_complete_layer_RMS_Prop(nn5,5))
+nn5.add_layer(ReLU_layer(nn5)) 
+nn5.add_layer(Linear_complete_layer_RMS_Prop(nn5,1)) 
 
-nn0 = NN(data,learning_rate=0.05)
-nn0.add_layer(Linear_complete_layer(nn0,1)) # categorical linear regression
-#nn0.add_layer(Linear_complete_layer_RMS_Prop(nn0,1)) # categorical linear regression
+# nn0 has no hidden layers, and so is just logistic regression:
+nn0 = NN(data, validation_proportion = 0) #learning_rate=0.05)
+nn0.add_layer(Linear_complete_layer(nn0,1)) 
+# Or try this for RMS-Prop:
+#nn0.add_layer(Linear_complete_layer_RMS_Prop(nn0,1)) 
 
 from learnLinear import plot_steps
 from learnProblem import Evaluate
 
-# To show plots:
-# plot_steps(learner = nn1, data = data, criterion=Evaluate.log_loss, num_steps=10000, log_scale=False, legend_label="nn1")
-# plot_steps(learner = nn2, data = data, criterion=Evaluate.log_loss, num_steps=10000, log_scale=False, legend_label="nn2")
-# plot_steps(learner = nn3, data = data, criterion=Evaluate.log_loss, num_steps=100000, log_scale=False, legend_label="nn3")
-# plot_steps(learner = nn0, data = data, criterion=Evaluate.log_loss, num_steps=10000, log_scale=False, legend_label="nn0")
+# To show plots first choose a criterion to use
+# crit = Evaluate.log_loss
+# crit = Evaluate.accuracy
+# plot_steps(learner = nn0, data = data, criterion=crit, num_steps=10000, log_scale=False, legend_label="nn0")
+# plot_steps(learner = nn2, data = data, criterion=crit, num_steps=10000, log_scale=False, legend_label="nn2")
+# plot_steps(learner = nn3, data = data, criterion=crit, num_steps=10000, log_scale=False, legend_label="nn3")
+# plot_steps(learner = nn5, data = data, criterion=crit, num_steps=10000, log_scale=False, legend_label="nn5")
 
-# plot_steps(learner = nn0, data = data, criterion=Evaluate.accuracy, num_steps=10000, log_scale=False, legend_label="nn0")
-# plot_steps(learner = nn1, data = data, criterion=Evaluate.accuracy, num_steps=10000, log_scale=False, legend_label="nn1")
-# plot_steps(learner = nn2, data = data, criterion=Evaluate.accuracy, num_steps=10000, log_scale=False, legend_label="nn2")
-# plot_steps(learner = nn3, data = data, criterion=Evaluate.accuracy, num_steps=10000, log_scale=False, legend_label="nn3")
-
+# for (nn,nname) in [(nn0,"nn0"),(nn2,"nn2"),(nn3,"nn3"),(nn5,"nn5")]: plot_steps(learner = nn, data = data, criterion=crit, num_steps=100000, log_scale=False, legend_label=nname)
 
 # Print some training examples
-#for eg in random.sample(data.train,10): print(eg,nn1.predictor(eg))
+#for eg in random.sample(data.train,10): print(eg,nn3.predictor(eg))
 
 # Print some test examples
-#for eg in random.sample(data.test,10): print(eg,nn1.predictor(eg))
+#for eg in random.sample(data.test,10): print(eg,nn3.predictor(eg))
 
 # To see the weights learned in linear layers
-# nn1.layers[0].weights
-# nn1.layers[2].weights
+# nn3.layers[0].weights
+# nn3.layers[2].weights
 
 # Print test:
 # for e in data.train: print(e,nn0.predictor(e))

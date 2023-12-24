@@ -1,12 +1,12 @@
 # stripsRegressionPlanner.py - Regression Planner with STRIPS actions
-# AIFCA Python3 code Version 0.9.5 Documentation at http://aipython.org
+# AIFCA Python code Version 0.9.12 Documentation at https://aipython.org
 # Download the zip file and read aipython.pdf for documentation
 
-# Artificial Intelligence: Foundations of Computational Agents http://artint.info
-# Copyright David L Poole and Alan K Mackworth 2017-2022.
+# Artificial Intelligence: Foundations of Computational Agents https://artint.info
+# Copyright 2017-2023 David L. Poole and Alan K. Mackworth
 # This work is licensed under a Creative Commons
 # Attribution-NonCommercial-ShareAlike 4.0 International License.
-# See: http://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
+# See: https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
 
 from searchProblem import Arc, Search_problem
 
@@ -92,8 +92,8 @@ class Regression_STRIPS(Search_problem):
 
 from searchBranchAndBound import DF_branch_and_bound
 from searchMPP import SearcherMPP 
-from stripsProblem import problem0, problem1, problem2, blocks1, blocks2, blocks3
+import stripsProblem
 
-# SearcherMPP(Regression_STRIPS(problem1)).search()   #A* with MPP
-# DF_branch_and_bound(Regression_STRIPS(problem1),10).search() #B&B
+# SearcherMPP(Regression_STRIPS(stripsProblem.problem1)).search()   #A* with MPP
+# DF_branch_and_bound(Regression_STRIPS(stripsProblem.problem1),10).search() #B&B
 

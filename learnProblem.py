@@ -1,12 +1,12 @@
 # learnProblem.py - A Learning Problem
-# AIFCA Python3 code Version 0.9.5 Documentation at http://aipython.org
+# AIFCA Python code Version 0.9.12 Documentation at https://aipython.org
 # Download the zip file and read aipython.pdf for documentation
 
-# Artificial Intelligence: Foundations of Computational Agents http://artint.info
-# Copyright David L Poole and Alan K Mackworth 2017-2022.
+# Artificial Intelligence: Foundations of Computational Agents https://artint.info
+# Copyright 2017-2023 David L. Poole and Alan K. Mackworth
 # This work is licensed under a Creative Commons
 # Attribution-NonCommercial-ShareAlike 4.0 International License.
-# See: http://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
+# See: https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
 
 import math, random, statistics
 import csv
@@ -16,7 +16,7 @@ from utilities import argmax
 boolean = [False, True]
 
 class Data_set(Displayable):
-    """ A data set consists of a list of training data and a list of test data.
+    """ A dataset consists of a list of training data and a list of test data.
     """
     
     def __init__(self, train, test=None, prob_test=0.20, target_index=0,
@@ -32,7 +32,7 @@ class Data_set(Displayable):
             there is no target (for unsupervised learning)
         header is a list of names for the features
         target_type is either None for automatic detection of target type 
-             or one of "numerical", "boolean", "cartegorical"
+             or one of "numeric", "boolean", "categorical"
         seed is for random number; None gives a different test set each time
         """
         if seed:  # given seed makes partition consistent from run-to-run
@@ -101,7 +101,7 @@ class Data_set(Displayable):
             
     def conditions(self, max_num_cuts=8, categorical_only = False):
         """returns a set of boolean conditions from the input features
-        max_num_cuts is the maximum number of cute for numerical features
+        max_num_cuts is the maximum number of cute for numeric features
         categorical_only is true if only categorical features are made binary
         """
         if (max_num_cuts, categorical_only) in self.conditions_cache:
@@ -122,7 +122,7 @@ class Data_set(Displayable):
                     feat.ftype = "boolean"
                     conds.append(feat)
                 elif all(isinstance(val,(int,float)) for val in frange):
-                    if categorical_only:  # numerical, don't make cuts
+                    if categorical_only:  # numeric, don't make cuts
                         def feat(e, i=ind):
                             return e[i]
                         feat.__doc__ = f"e[{ind}]"
@@ -242,7 +242,7 @@ class Data_from_file(Data_set):
             (if False, it uses the original features).
         categorical is a set (or list) of features that should be treated as categorical
         target_type is either None for automatic detection of target type 
-             or one of "numerical", "boolean", "cartegorical"
+             or one of "numeric", "boolean", "categorical"
         include_only is a list or set of indexes of columns to include
         """
         self.boolean_features = boolean_features
@@ -284,7 +284,7 @@ class Data_from_files(Data_set):
             (if False, it uses the original features).
         categorical is a set (or list) of features that should be treated as categorical
         target_type is either None for automatic detection of target type 
-             or one of "numerical", "boolean", "cartegorical"
+             or one of "numeric", "boolean", "categorical"
         include_only is a list or set of indexes of columns to include
         """
         self.boolean_features = boolean_features
@@ -308,7 +308,7 @@ class Data_from_files(Data_set):
                                   target_index=target_index, header=header)
 
 def interpret_elements(str_list):
-    """make the elements of string list str_list numerical if possible.
+    """make the elements of string list str_list numeric if possible.
     Otherwise remove initial and trailing spaces.
     """
     res = []
@@ -321,9 +321,9 @@ def interpret_elements(str_list):
             except ValueError:
                 se = e.strip()
                 if se in ["True","true","TRUE"]:
-                    res.append[True]
-                if se in ["False","false","FALSE"]:
-                    res.append[False]
+                    res.append(True)
+                elif se in ["False","false","FALSE"]:
+                    res.append(False)
                 else:
                     res.append(e.strip())
     return res
@@ -401,7 +401,7 @@ def neq_feat(f1,f2):
     return feat
 
 # from learnProblem import Data_set_augmented,prod_feat
-# data = Data_from_file('data/holiday.csv', num_train=19, target_index=-1)
+# data = Data_from_file('data/holiday.csv', has_header=True, num_train=19, target_index=-1)
 # data = Data_from_file('data/iris.data', prob_test=1/3, target_index=-1)
 ## Data = Data_from_file('data/SPECT.csv',  prob_test=0.5, target_index=0)
 # dataplus = Data_set_augmented(data,[],[prod_feat])

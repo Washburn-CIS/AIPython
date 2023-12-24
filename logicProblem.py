@@ -1,12 +1,12 @@
 # logicProblem.py - Representations Logics
-# AIFCA Python3 code Version 0.9.5 Documentation at http://aipython.org
+# AIFCA Python code Version 0.9.12 Documentation at https://aipython.org
 # Download the zip file and read aipython.pdf for documentation
 
-# Artificial Intelligence: Foundations of Computational Agents http://artint.info
-# Copyright David L Poole and Alan K Mackworth 2017-2022.
+# Artificial Intelligence: Foundations of Computational Agents https://artint.info
+# Copyright 2017-2023 David L. Poole and Alan K. Mackworth
 # This work is licensed under a Creative Commons
 # Attribution-NonCommercial-ShareAlike 4.0 International License.
-# See: http://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
+# See: https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
 
 class Clause(object):
     """A definite clause"""
@@ -16,13 +16,13 @@ class Clause(object):
         self.head=head
         self.body = body
 
-    def __str__(self):
+    def __repr__(self):
         """returns the string representation of a clause.
         """
         if self.body:
-            return self.head + " <- " + " & ".join(self.body) + "."
+            return f"{self.head} <- {' & '.join(str(a) for a in self.body)}."
         else:
-            return self.head + "."
+            return f"{self.head}."
 
 class Askable(object):
     """An askable atom"""
@@ -37,7 +37,7 @@ class Askable(object):
 
 def yes(ans):
     """returns true if the answer is yes in some form"""
-    return ans.lower() in ['yes', 'yes.', 'oui', 'oui.', 'y', 'y.']    # bilingual
+    return ans.lower() in ['yes', 'oui', 'y']    # bilingual
 
 from display import Displayable
         
@@ -51,17 +51,20 @@ class KB(Displayable):
         self.askables = [c.atom for c in statements if isinstance(c, Askable)]
         self.atom_to_clauses = {}  # dictionary giving clauses with atom as head
         for c in self.clauses:
-            if c.head in self.atom_to_clauses:
-                self.atom_to_clauses[c.head].add(c)
-            else:
-                self.atom_to_clauses[c.head] = {c}
+            self.add_clause(c)
+
+    def add_clause(self, c):
+        if c.head in self.atom_to_clauses:
+            self.atom_to_clauses[c.head].append(c)
+        else:
+            self.atom_to_clauses[c.head] = [c]
 
     def clauses_for_atom(self,a):
-        """returns set of clauses with atom a as the head"""
+        """returns list of clauses with atom a as the head"""
         if a in self.atom_to_clauses:
             return  self.atom_to_clauses[a]
         else:
-            return set()
+            return []
 
     def __str__(self):
         """returns a string representation of this knowledge base.

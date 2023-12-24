@@ -1,12 +1,12 @@
 # learnDT.py - Learning a binary decision tree
-# AIFCA Python3 code Version 0.9.5 Documentation at http://aipython.org
+# AIFCA Python code Version 0.9.12 Documentation at https://aipython.org
 # Download the zip file and read aipython.pdf for documentation
 
-# Artificial Intelligence: Foundations of Computational Agents http://artint.info
-# Copyright David L Poole and Alan K Mackworth 2017-2022.
+# Artificial Intelligence: Foundations of Computational Agents https://artint.info
+# Copyright 2017-2023 David L. Poole and Alan K. Mackworth
 # This work is licensed under a Creative Commons
 # Attribution-NonCommercial-ShareAlike 4.0 International License.
-# See: http://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
+# See: https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
 
 from learnProblem import Learner, Evaluate
 from learnNoInputs import Predict
@@ -18,7 +18,7 @@ class DT_learner(Learner):
                  split_to_optimize=Evaluate.log_loss,     # to minimize for at each split 
                  leaf_prediction=Predict.empirical,   # what to use for value at leaves
                  train=None,                     # used for cross validation
-                 max_num_cuts=8,   # maximum number of conditions to split a numerical feature into
+                 max_num_cuts=8,   # maximum number of conditions to split a numeric feature into
                  gamma=1e-7  , # minimum improvement needed to expand a node
                  min_child_weight=10):
         self.dataset = dataset
@@ -155,6 +155,6 @@ if __name__ == "__main__":
     #data=Data_from_file('data/iris.data', target_index=-1); print("iris.data")
     data = Data_from_file('data/carbool.csv', target_index=-1, seed=123)
     #data = Data_from_file('data/mail_reading.csv', target_index=-1);  print("mail_reading.csv")
-    #data = Data_from_file('data/holiday.csv', num_train=19, target_index=-1); print("holiday.csv")
+    #data = Data_from_file('data/holiday.csv', has_header=True, num_train=19, target_index=-1); print("holiday.csv")
     testDT(data, print_tree=False)
     

@@ -1,39 +1,18 @@
 # cspProblem.py - Representations of a Constraint Satisfaction Problem
-# AIFCA Python3 code Version 0.9.5 Documentation at http://aipython.org
+# AIFCA Python code Version 0.9.12 Documentation at https://aipython.org
 # Download the zip file and read aipython.pdf for documentation
 
-# Artificial Intelligence: Foundations of Computational Agents http://artint.info
-# Copyright David L Poole and Alan K Mackworth 2017-2022.
+# Artificial Intelligence: Foundations of Computational Agents https://artint.info
+# Copyright 2017-2023 David L. Poole and Alan K. Mackworth
 # This work is licensed under a Creative Commons
 # Attribution-NonCommercial-ShareAlike 4.0 International License.
-# See: http://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
+# See: https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
 
-import random
+from variable import Variable 
+
+# for showing csps:
 import matplotlib.pyplot as plt
-
-class Variable(object):
-    """A random variable.
-    name (string) - name of the variable
-    domain (list) - a list of the values for the variable.
-    Variables are ordered according to their name.
-    """
-
-    def __init__(self, name, domain, position=None):
-        """Variable
-        name a string
-        domain a list of printable values
-        position of form (x,y) 
-        """
-        self.name = name   # string
-        self.domain = domain # list of values
-        self.position = position if position else (random.random(), random.random())
-        self.size = len(domain) 
-
-    def __str__(self):
-        return self.name
-    
-    def __repr__(self):
-        return self.name  # f"Variable({self.name})"
+import matplotlib.lines as lines
 
 class Constraint(object):
     """A Constraint consists of
@@ -46,7 +25,7 @@ class Constraint(object):
         self.scope = scope
         self.condition = condition
         if string is None:
-            self.string = self.condition.__name__ + str(self.scope)
+            self.string = f"{self.condition.__name__}({self.scope})"
         else:
             self.string = string
         self.position = position
@@ -105,26 +84,80 @@ class CSP(object):
                     for con in self.constraints
                     if con.can_evaluate(assignment))
 
-    def show(self):
+    def show(self, linewidth=3, showDomains=False, showAutoAC = False):
+        self.linewidth = linewidth
+        self.picked = None
         plt.ion()   # interactive
-        ax = plt.figure().gca()
-        ax.set_axis_off()
-        plt.title(self.title)
-        var_bbox = dict(boxstyle="round4,pad=1.0,rounding_size=0.5")
-        con_bbox = dict(boxstyle="square,pad=1.0",color="green")
+        self.arcs = {}   # arc: (con,var) dictionary
+        self.thelines = {}  # (con,var):arc dictionary
+        self.nodes = {}  # node: variable dictionary
+        self.fig, self.ax= plt.subplots(1, 1)
+        self.ax.set_axis_off()
         for var in self.variables:
             if var.position is None:
                 var.position = (random.random(), random.random())
+        self.showAutoAC = showAutoAC # used for consistency GUI
+        self.autoAC = False
+        domains = {var:var.domain for var in self.variables} if showDomains else {}
+        self.draw_graph(domains=domains)
+
+    def draw_graph(self, domains={}, to_do = {}, title=None, fontsize=10):
+        self.ax.clear()
+        self.ax.set_axis_off()
+        if title:
+            plt.title(title, fontsize=fontsize)
+        else:
+            plt.title(self.title, fontsize=fontsize)
+        var_bbox = dict(boxstyle="round4,pad=1.0,rounding_size=0.5")
+        con_bbox = dict(boxstyle="square,pad=1.0",color="green")
+        self.autoACtext = plt.text(0,0,"Auto AC" if self.showAutoAC else "",
+                                       bbox={'boxstyle':'square','color':'yellow'},
+                                       picker=True, fontsize=fontsize)
         for con in self.constraints:
             if con.position is None:
                 con.position = tuple(sum(var.position[i] for var in con.scope)/len(con.scope)
                                          for i in range(2))
+            cx,cy = con.position
             bbox = dict(boxstyle="square,pad=1.0",color="green")
             for var in con.scope:
-                ax.annotate(con.string, var.position, xytext=con.position,
-                                    arrowprops={'arrowstyle':'-'},bbox=con_bbox,
-                                    ha='center')
+                vx,vy = var.position
+                if (var,con) in to_do:
+                    color = 'blue'
+                else:
+                    color = 'limegreen'
+                line = lines.Line2D([cx,vx], [cy,vy], axes=self.ax, color=color,
+                                    picker=True, pickradius=10, linewidth=self.linewidth)
+                self.arcs[line]= (var,con)
+                self.thelines[(var,con)] = line
+                self.ax.add_line(line)
+            plt.text(cx,cy,con.string, 
+                                   bbox=con_bbox,
+                                   ha='center',va='center', fontsize=fontsize)
         for var in self.variables:
             x,y = var.position
-            plt.text(x,y,var.name,bbox=var_bbox,ha='center')
+            if domains:
+                node_label = f"{var.name}\n{domains[var]}"
+            else:
+                node_label = var.name
+            node = plt.text(x, y, node_label, bbox=var_bbox, ha='center', va='center',
+                         picker=True, fontsize=fontsize)
+            self.nodes[node] = var
+        self.fig.canvas.mpl_connect('pick_event', self.pick_handler)
+
+    def pick_handler(self,event):
+        mouseevent = event.mouseevent
+        self.last_artist = artist = event.artist
+        #print('***picker handler:',artist, 'mouseevent:', mouseevent)
+        if artist in self.arcs:
+            #print('### selected arc',self.arcs[artist])
+            self.picked = self.arcs[artist]
+        elif artist in self.nodes:
+            #print('### selected node',self.nodes[artist])
+            self.picked = self.nodes[artist]
+        elif artist==self.autoACtext:
+            self.autoAC = True
+            #print("*** autoAC")
+        else:
+            print("### unknown click")
+
 

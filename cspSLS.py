@@ -1,12 +1,12 @@
 # cspSLS.py - Stochastic Local Search for Solving CSPs
-# AIFCA Python3 code Version 0.9.5 Documentation at http://aipython.org
+# AIFCA Python code Version 0.9.12 Documentation at https://aipython.org
 # Download the zip file and read aipython.pdf for documentation
 
-# Artificial Intelligence: Foundations of Computational Agents http://artint.info
-# Copyright David L Poole and Alan K Mackworth 2017-2022.
+# Artificial Intelligence: Foundations of Computational Agents https://artint.info
+# Copyright 2017-2023 David L. Poole and Alan K. Mackworth
 # This work is licensed under a Creative Commons
 # Attribution-NonCommercial-ShareAlike 4.0 International License.
-# See: http://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
+# See: https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
 
 from cspProblem import CSP, Constraint
 from searchProblem import Arc, Search_problem
@@ -164,7 +164,8 @@ class SLSearcher(Displayable):
         
 def random_choice(st):
     """selects a random element from set st.
-    It will be more efficient to convert to a tuple or list only once."""
+    It would be more efficient to convert to a tuple or list only once
+    (left as exercise)."""
     return random.choice(tuple(st))
 
 class Updatable_priority_queue(object):
@@ -204,7 +205,7 @@ class Updatable_priority_queue(object):
         for elt,incr in update_dict.items():
             if incr != 0:
                 newval = self.elt_map.get(elt,[0])[0] - incr
-                assert newval <= 0, str(elt)+":"+str(newval+incr)+"-"+str(incr)
+                assert newval <= 0, f"{elt}:{newval+incr}-{incr}"
                 self.remove(elt)
                 if newval != 0:
                     self.add(elt,newval)
@@ -236,6 +237,7 @@ class Updatable_priority_queue(object):
         return all(triple[2] == self.REMOVED for triple in self.pq)
 
 import matplotlib.pyplot as plt
+# plt.style.use('grayscale')
 
 class Runtime_distribution(object):
     def __init__(self, csp, xscale='log'):
@@ -266,10 +268,9 @@ class Runtime_distribution(object):
             label = "P(best)=%.2f, P(ac)=%.2f" % (prob_best, p_ac)
         plt.plot(stats,range(len(stats)),label=label)
         plt.legend(loc="upper left")
-        #plt.draw()
         SLSearcher.max_display_level= temp_mdl  #restore display
 
-from cspExamples import test_csp
+import cspExamples
 def sls_solver(csp,prob_best=0.7):
     """stochastic local searcher (prob_best=0.7)"""
     se0 = SLSearcher(csp)
@@ -280,19 +281,17 @@ def any_conflict_solver(csp):
     return sls_solver(csp,0)
 
 if __name__ == "__main__":
-    test_csp(sls_solver) 
-    test_csp(any_conflict_solver)
+    cspExamples.test_csp(sls_solver) 
+    cspExamples.test_csp(any_conflict_solver)
     
-from cspExamples import csp1, csp2, crossword1, crossword1d
-
 ## Test Solving CSPs with Search:
-#se1 = SLSearcher(csp1); print(se1.search(100))
-#se2 = SLSearcher(csp2); print(se2.search(1000,1.0)) # greedy
-#se2 = SLSearcher(csp2); print(se2.search(1000,0))  # any_conflict
-#se2 = SLSearcher(csp2); print(se2.search(1000,0.7)) # 70% greedy; 30% any_conflict
+#se1 = SLSearcher(cspExamples.csp1); print(se1.search(100))
+#se2 = SLSearcher(cspExamples.csp2); print(se2.search(1000,1.0)) # greedy
+#se2 = SLSearcher(cspExamples.csp2); print(se2.search(1000,0))  # any_conflict
+#se2 = SLSearcher(cspExamples.csp2); print(se2.search(1000,0.7)) # 70% greedy; 30% any_conflict
 #SLSearcher.max_display_level=2  #more detailed display
-#se3 = SLSearcher(crossword1); print(se3.search(100),0.7)
-#p = Runtime_distribution(csp2)
+#se3 = SLSearcher(cspExamples.crossword1); print(se3.search(100),0.7)
+#p = Runtime_distribution(cspExamples.csp2)
 #p.plot_runs(1000,1000,0)    # any_conflict
 #p.plot_runs(1000,1000,1.0)  # greedy
 #p.plot_runs(1000,1000,0.7)  # 70% greedy; 30% any_conflict

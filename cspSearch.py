@@ -1,16 +1,15 @@
 # cspSearch.py - Representations of a Search Problem from a CSP.
-# AIFCA Python3 code Version 0.9.5 Documentation at http://aipython.org
+# AIFCA Python code Version 0.9.12 Documentation at https://aipython.org
 # Download the zip file and read aipython.pdf for documentation
 
-# Artificial Intelligence: Foundations of Computational Agents http://artint.info
-# Copyright David L Poole and Alan K Mackworth 2017-2022.
+# Artificial Intelligence: Foundations of Computational Agents https://artint.info
+# Copyright 2017-2023 David L. Poole and Alan K. Mackworth
 # This work is licensed under a Creative Commons
 # Attribution-NonCommercial-ShareAlike 4.0 International License.
-# See: http://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
+# See: https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
 
 from cspProblem import CSP, Constraint
 from searchProblem import Arc, Search_problem
-from utilities import dict_union
 
 class Search_from_CSP(Search_problem):
     """A search problem directly from the CSP.
@@ -41,12 +40,12 @@ class Search_from_CSP(Search_problem):
         var = self.variables[len(node)] # the next variable
         res = []
         for val in var.domain:
-            new_env = dict_union(node,{var:val})  #dictionary union
+            new_env = node|{var:val}  #dictionary union
             if self.csp.consistent(new_env):
                 res.append(Arc(node,new_env))
         return res
 
-from cspExamples import csp1,csp2,test_csp, crossword1, crossword1d
+import cspExamples
 from searchGeneric import Searcher
 
 def solver_from_searcher(csp):
@@ -61,12 +60,12 @@ if __name__ == "__main__":
     test_csp(solver_from_searcher)
 
 ## Test Solving CSPs with Search:
-searcher1 = Searcher(Search_from_CSP(csp1))
+searcher1 = Searcher(Search_from_CSP(cspExamples.csp1))
 #print(searcher1.search())  # get next solution
-searcher2 = Searcher(Search_from_CSP(csp2))
+searcher2 = Searcher(Search_from_CSP(cspExamples.csp2))
 #print(searcher2.search())  # get next solution
-searcher3 = Searcher(Search_from_CSP(crossword1))
+searcher3 = Searcher(Search_from_CSP(cspExamples.crossword1))
 #print(searcher3.search())  # get next solution
-searcher4 = Searcher(Search_from_CSP(crossword1d))
+searcher4 = Searcher(Search_from_CSP(cspExamples.crossword1d))
 #print(searcher4.search())  # get next solution (warning: slow)
 

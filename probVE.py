@@ -1,12 +1,12 @@
 # probVE.py - Variable Elimination for Graphical Models
-# AIFCA Python3 code Version 0.9.5 Documentation at http://aipython.org
+# AIFCA Python code Version 0.9.12 Documentation at https://aipython.org
 # Download the zip file and read aipython.pdf for documentation
 
-# Artificial Intelligence: Foundations of Computational Agents http://artint.info
-# Copyright David L Poole and Alan K Mackworth 2017-2022.
+# Artificial Intelligence: Foundations of Computational Agents https://artint.info
+# Copyright 2017-2023 David L. Poole and Alan K. Mackworth
 # This work is licensed under a Creative Commons
 # Attribution-NonCommercial-ShareAlike 4.0 International License.
-# See: http://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
+# See: https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
 
 from probFactors import Factor, FactorObserved, FactorSum, factor_times
 from probGraphicalModels import GraphicalModel, InferenceMethod
@@ -73,7 +73,7 @@ class VE(InferenceMethod):
             not_contains_var.append(newFactor)
             return not_contains_var
 
-from probGraphicalModels import bn_4ch, A,B,C,D
+from probExamples import bn_4ch, A,B,C,D
 bn_4chv = VE(bn_4ch)
 ## bn_4chv.query(A,{})
 ## bn_4chv.query(D,{})
@@ -82,7 +82,7 @@ bn_4chv = VE(bn_4ch)
 ## bn_4chv.query(A,{D:True})
 ## bn_4chv.query(B,{A:True,D:False})
 
-from probGraphicalModels import bn_report,Alarm,Fire,Leaving,Report,Smoke,Tamper
+from probExamples import bn_report,Alarm,Fire,Leaving,Report,Smoke,Tamper
 bn_reportv = VE(bn_report)    # answers queries using variable elimination
 ## bn_reportv.query(Tamper,{})
 ## InferenceMethod.max_display_level = 0   # show no detail in displaying
@@ -91,14 +91,14 @@ bn_reportv = VE(bn_report)    # answers queries using variable elimination
 ## bn_reportv.query(Tamper,{Report:True})
 ## bn_reportv.query(Tamper,{Report:True,Smoke:False})
 
-from probGraphicalModels import bn_sprinkler, Season, Sprinkler, Rained, Grass_wet, Grass_shiny, Shoes_wet
+from probExamples import bn_sprinkler, Season, Sprinkler, Rained, Grass_wet, Grass_shiny, Shoes_wet
 bn_sprinklerv = VE(bn_sprinkler)
 ## bn_sprinklerv.query(Shoes_wet,{})
 ## bn_sprinklerv.query(Shoes_wet,{Rained:True})
 ## bn_sprinklerv.query(Shoes_wet,{Grass_shiny:True})
 ## bn_sprinklerv.query(Shoes_wet,{Grass_shiny:False,Rained:True})
 
-from probGraphicalModels import bn_lr1, Cough, Fever, Sneeze, Cold, Flu, Covid
+from probExamples import bn_lr1, Cough, Fever, Sneeze, Cold, Flu, Covid
 vediag = VE(bn_lr1)
 ## vediag.query(Cough,{})
 ## vediag.query(Cold,{Cough:1,Sneeze:0,Fever:1})

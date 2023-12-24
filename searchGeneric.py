@@ -1,16 +1,14 @@
 # searchGeneric.py - Generic Searcher, including depth-first and A*
-# AIFCA Python3 code Version 0.9.5 Documentation at http://aipython.org
+# AIFCA Python code Version 0.9.12 Documentation at https://aipython.org
 # Download the zip file and read aipython.pdf for documentation
 
-# Artificial Intelligence: Foundations of Computational Agents http://artint.info
-# Copyright David L Poole and Alan K Mackworth 2017-2022.
+# Artificial Intelligence: Foundations of Computational Agents https://artint.info
+# Copyright 2017-2023 David L. Poole and Alan K. Mackworth
 # This work is licensed under a Creative Commons
 # Attribution-NonCommercial-ShareAlike 4.0 International License.
-# See: http://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
+# See: https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
 
-from display import Displayable, visualize
-from searchProblem import Search_problem
-from searchProblem import Arc
+from display import Displayable
 
 class Searcher(Displayable):
     """returns a searcher for a problem.
@@ -20,7 +18,6 @@ class Searcher(Displayable):
     def __init__(self, problem):
         """creates a searcher from a problem
         """
-        assert issubclass(type(problem),Search_problem)
         self.problem = problem
         self.initialize_frontier()
         self.num_expanded = 0
@@ -36,72 +33,37 @@ class Searcher(Displayable):
     def add_to_frontier(self,path):
         self.frontier.append(path)
         
-    @visualize
     def search(self):
         """returns (next) path from the problem's start node
         to a goal node. 
         Returns None if no path exists.
         """
         while not self.empty_frontier():
-            path = self.frontier.pop()
-            self.display(2, "Expanding:",path,"(cost:",path.cost,")")
+            self.path = self.frontier.pop()
             self.num_expanded += 1
-            if self.problem.is_goal(path.end()):    # solution found
-                self.display(1, self.num_expanded, "paths have been expanded and",
+            if self.problem.is_goal(self.path.end()):    # solution found
+                self.solution = self.path   # store the solution found
+                self.display(1, f"Solution: {self.path} (cost: {self.path.cost})\n",
+                    self.num_expanded, "paths have been expanded and",
                             len(self.frontier), "paths remain in the frontier")
-                self.solution = path   # store the solution found
-                return path
+                return self.path
             else:
-                neighs = self.problem.neighbors(path.end())
-                self.display(3,"Neighbors are", neighs)
+                self.display(4,f"Expanding: {self.path} (cost: {self.path.cost})")
+                neighs = self.problem.neighbors(self.path.end())
+                self.display(2,f"Expanding: {self.path} with neighbors {neighs}")
                 for arc in reversed(list(neighs)):
-                    assert issubclass(type(arc), Arc)
-                    self.add_to_frontier(Path(path,arc))
-                self.display(3,"Frontier:",self.frontier)
-        self.display(1,"No (more) solutions. Total of",
+                    self.add_to_frontier(Path(self.path,arc))
+                self.display(3, f"New frontier: {[p.end() for p in self.frontier]}")
+
+        self.display(0,"No (more) solutions. Total of",
                      self.num_expanded,"paths expanded.")
 
-
-
-class BreadthFirstSearcher(Searcher):
-    """returns a searcher for a problem.
-    Paths can be found by repeatedly calling search().
-    This does breadth-first search 
-    """
-    def __init__(self, problem):
-        """creates a searcher from a problem
-        """
-        super().__init__(problem)
-        
-    def add_to_frontier(self,path):
-        self.frontier.insert(0, path) # insert at beginning of list to get a queue
-
-
-
-class BreadthFirstSearcherNoCycles(Searcher):
-    """returns a searcher for a problem.
-    Paths can be found by repeatedly calling search().
-    This does breadth-first search 
-    """
-    def __init__(self, problem):
-        """creates a searcher from a problem
-        """
-        super().__init__(problem)
-        
-    def add_to_frontier(self,path):
-        tpath = path
-        visited_states = set()
-        while tpath.arc:  # traverse the path
-          if tpath.arc.to_node in visited_states: #see if we've visited the current state before
-            return  # if so, this is a cycle -- do not add to frontier
-          visited_states.add(tpath.arc.to_node)  # remember we visisted this state
-          tpath = tpath.initial
-        if tpath in visited_states:
-            return
-          
-        self.frontier.insert(0, path) # insert at beginning of list to get a queue
-  
-
+# Depth-first search for problem1; do the following:
+# searcher1 = Searcher(searchExample.problem1)
+# searcher1.search()  # find first solution
+# searcher1.search()  # find next solution (repeat until no solutions)
+# searcher_sdg = Searcher(searchExample.simp_delivery_graph)
+# searcher_sdg.search()  # find first or next solution
 
 import heapq        # part of the Python standard library
 from searchProblem import Path
@@ -118,7 +80,7 @@ class FrontierPQ(object):
     def __init__(self):
         """constructs the frontier, initially an empty priority queue 
         """
-        self.frontier_index = 0  # the number of items ever added to the frontier
+        self.frontier_index = 0  # the number of items added to the frontier
         self.frontierpq = []  # the frontier priority queue
 
     def empty(self):
@@ -173,11 +135,11 @@ class AStarSearcher(Searcher):
         value = path.cost+self.problem.heuristic(path.end())
         self.frontier.add(path, value)
 
-import searchProblem as searchProblem
+import searchExample
 
-def test(SearchClass, problem=searchProblem.problem1, solutions=[['g','d','b','c','a']] ):
+def test(SearchClass, problem=searchExample.problem1, solutions=[['G','D','B','C','A']] ):
     """Unit test for aipython searching algorithms.
-    SearchClass is a class that takes a problemm and implements search()
+    SearchClass is a class that takes a problem and implements search()
     problem is a search problem
     solutions is a list of optimal solutions 
     """
@@ -190,18 +152,18 @@ def test(SearchClass, problem=searchProblem.problem1, solutions=[['g','d','b','c
     print("Passed unit test")
 
 if __name__ == "__main__":
-    #test(Searcher)
+    #test(Searcher)      # what needs to be changed to make this succeed?
     test(AStarSearcher)
     
 # example queries:
-# searcher1 = Searcher(searchProblem.acyclic_delivery_problem)   # DFS
+# searcher1 = Searcher(searchExample.simp_delivery_graph)   # DFS
 # searcher1.search()  # find first path
 # searcher1.search()  # find next path
-# searcher2 = AStarSearcher(searchProblem.acyclic_delivery_problem)   # A*
+# searcher2 = AStarSearcher(searchExample.simp_delivery_graph)   # A*
 # searcher2.search()  # find first path
 # searcher2.search()  # find next path
-# searcher3 = Searcher(searchProblem.cyclic_delivery_problem)   # DFS
+# searcher3 = Searcher(searchExample.cyclic_simp_delivery_graph)   # DFS
 # searcher3.search()  # find first path with DFS. What do you expect to happen?
-# searcher4 = AStarSearcher(searchProblem.cyclic_delivery_problem)    # A*
+# searcher4 = AStarSearcher(searchExample.cyclic_simp_delivery_graph)    # A*
 # searcher4.search()  # find first path
 

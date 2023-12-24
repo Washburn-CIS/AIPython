@@ -1,12 +1,12 @@
 # learnCrossValidation.py - Cross Validation for Parameter Tuning
-# AIFCA Python3 code Version 0.9.5 Documentation at http://aipython.org
+# AIFCA Python code Version 0.9.12 Documentation at https://aipython.org
 # Download the zip file and read aipython.pdf for documentation
 
-# Artificial Intelligence: Foundations of Computational Agents http://artint.info
-# Copyright David L Poole and Alan K Mackworth 2017-2022.
+# Artificial Intelligence: Foundations of Computational Agents https://artint.info
+# Copyright 2017-2023 David L. Poole and Alan K. Mackworth
 # This work is licensed under a Creative Commons
 # Attribution-NonCommercial-ShareAlike 4.0 International License.
-# See: http://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
+# See: https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
 
 from learnProblem import Data_set, Data_from_file, Evaluate
 from learnNoInputs import Predict
@@ -76,12 +76,11 @@ def plot_error(data, criterion=Evaluate.squared_loss, leaf_prediction=Predict.em
     plt.legend()
     plt.draw()
 
-# The following produces Figure 7.15 of Poole and Mackworth [2017]
+# The following produces the graphs of Figure 7.18 of Poole and Mackworth [2023]
 # data = Data_from_file('data/SPECT.csv',target_index=0, seed=123)
-# plot_error(data)    # warning, may take a long time depending on the dataset
+# plot_error(data, criterion=Evaluate.log_loss, leaf_prediction=Predict.laplace) 
 
 #also try:
-# data = Data_from_file('data/mail_reading.csv', target_index=-1)
+# plot_error(data)
 # data = Data_from_file('data/carbool.csv', target_index=-1, seed=123)
-# plot_error(data, criterion=Evaluate.log_loss, leaf_prediction=Predict.laplace)    # warning, may take a long time depending on the dataset
 

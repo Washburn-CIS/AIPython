@@ -1,19 +1,18 @@
 # probDBN.py - Dynamic belief networks
-# AIFCA Python3 code Version 0.9.5 Documentation at http://aipython.org
+# AIFCA Python code Version 0.9.12 Documentation at https://aipython.org
 # Download the zip file and read aipython.pdf for documentation
 
-# Artificial Intelligence: Foundations of Computational Agents http://artint.info
-# Copyright David L Poole and Alan K Mackworth 2017-2022.
+# Artificial Intelligence: Foundations of Computational Agents https://artint.info
+# Copyright 2017-2023 David L. Poole and Alan K. Mackworth
 # This work is licensed under a Creative Commons
 # Attribution-NonCommercial-ShareAlike 4.0 International License.
-# See: http://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
+# See: https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
 
-from probVariables import Variable
+from variable import Variable
 from probGraphicalModels import GraphicalModel, BeliefNetwork
 from probFactors import Prob, Factor, CPD
 from probVE import VE
 from display import Displayable
-from utilities import dict_union
 
 class DBNvariable(Variable):
     """A random variable that incorporates the stage (time)
@@ -146,10 +145,10 @@ class BNfromDBN(BeliefNetwork):
         bnfactors = {CPDrename(fac,{self.name2var[var.basename][0]:var
                                          for var in fac.variables})
                       for fac in dbn.init_factors}
-        bnfactors |= {CPDrename(fac,dict_union({self.name2var[var.basename][i]:var
+        bnfactors |= {CPDrename(fac,{self.name2var[var.basename][i]:var
                                          for var in fac.variables if var.index=='prev'}
-                                   , {self.name2var[var.basename][i+1]:var
-                                         for var in fac.variables if var.index=='now'}))
+                                   | {self.name2var[var.basename][i+1]:var
+                                         for var in fac.variables if var.index=='now'})
                       for fac in dbn.transition_factors
                           for i in range(horizon)}
         self.display(1,f"bnfactors={bnfactors}")

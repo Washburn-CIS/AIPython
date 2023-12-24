@@ -1,13 +1,14 @@
 # agentTop.py - Top Layer
-# AIFCA Python3 code Version 0.9.5 Documentation at http://aipython.org
+# AIFCA Python code Version 0.9.12 Documentation at https://aipython.org
 # Download the zip file and read aipython.pdf for documentation
 
-# Artificial Intelligence: Foundations of Computational Agents http://artint.info
-# Copyright David L Poole and Alan K Mackworth 2017-2022.
+# Artificial Intelligence: Foundations of Computational Agents https://artint.info
+# Copyright 2017-2023 David L. Poole and Alan K. Mackworth
 # This work is licensed under a Creative Commons
 # Attribution-NonCommercial-ShareAlike 4.0 International License.
-# See: http://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
+# See: https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
 
+from display import Displayable 
 from agentMiddle import Rob_middle_layer
 from agents import Environment
 
@@ -36,14 +37,18 @@ class Rob_top_layer(Environment):
 
 import matplotlib.pyplot as plt
 
-class Plot_env(object):
+class Plot_env(Displayable):
     def __init__(self, body,top):
         """sets up the plot
         """
         self.body = body
+        self.top = top
         plt.ion()
-        plt.clf()
         plt.axes().set_aspect('equal')
+        self.redraw()
+
+    def redraw(self):
+        plt.clf()
         for wall in body.env.walls:
             ((x0,y0),(x1,y1)) = wall
             plt.plot([x0,x1],[y0,y1],"-k",linewidth=3)
@@ -52,17 +57,20 @@ class Plot_env(object):
             plt.plot([x],[y],"k<")
             plt.text(x+1.0,y+0.5,loc) # print the label above and to the right
         plt.plot([body.rob_x],[body.rob_y],"go")
-        plt.draw()
+        plt.gca().figure.canvas.draw()
+        if self.body.history or self.body.wall_history:
+            self.plot_run()
 
     def plot_run(self):
         """plots the history after the agent has finished.
         This is typically only used if body.plotting==False
         """
-        xs,ys = zip(*self.body.history)
-        plt.plot(xs,ys,"go")
-        wxs,wys = zip(*self.body.wall_history)
-        plt.plot(wxs,wys,"ro")
-        #plt.draw()
+        if self.body.history:
+            xs,ys = zip(*self.body.history)
+            plt.plot(xs,ys,"go")
+        if self.body.wall_history:
+            wxs,wys = zip(*self.body.wall_history)
+            plt.plot(wxs,wys,"ro")
 
 from agentEnv import Rob_body, Rob_env
 

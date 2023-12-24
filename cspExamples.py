@@ -1,12 +1,12 @@
 # cspExamples.py - Example CSPs
-# AIFCA Python3 code Version 0.9.5 Documentation at http://aipython.org
+# AIFCA Python code Version 0.9.12 Documentation at https://aipython.org
 # Download the zip file and read aipython.pdf for documentation
 
-# Artificial Intelligence: Foundations of Computational Agents http://artint.info
-# Copyright David L Poole and Alan K Mackworth 2017-2022.
+# Artificial Intelligence: Foundations of Computational Agents https://artint.info
+# Copyright 2017-2023 David L. Poole and Alan K. Mackworth
 # This work is licensed under a Creative Commons
 # Attribution-NonCommercial-ShareAlike 4.0 International License.
-# See: http://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
+# See: https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
 
 from cspProblem import Variable, CSP, Constraint        
 from operator import lt,ne,eq,gt
@@ -17,7 +17,7 @@ def ne_(val):
     # nev = partial(neq,val)     # another alternative definition
     def nev(x):
         return val != x
-    nev.__name__ = str(val)+"!="      # name of the function 
+    nev.__name__ = f"{val} != "      # name of the function 
     return nev
 
 def is_(val):
@@ -26,7 +26,7 @@ def is_(val):
     # isv = partial(eq,val)      # another alternative definition
     def isv(x):
         return val == x
-    isv.__name__ = str(val)+"=="
+    isv.__name__ = f"{val} == "
     return isv
 
 X = Variable('X', {1,2,3})
@@ -45,6 +45,9 @@ C2 = Constraint([B,C], lt, "B < C", position=(0.6,0.1))
 csp1 = CSP("csp1", {A, B, C},
            [C0, C1, C2])
 
+csp1s = CSP("csp1s", {A, B, C},
+           [C0, C2])  # A<B, B<C
+           
 D = Variable('D', {1,2,3,4}, position=(0,0.4))
 E = Variable('E', {1,2,3,4}, position=(0.5,0))
 csp2 = CSP("csp2", {A,B,C,D,E},
@@ -54,16 +57,16 @@ csp2 = CSP("csp2", {A,B,C,D,E},
             Constraint([B,C], ne, "A != C"),
             Constraint([C,D], lt, "C < D"),
             Constraint([A,D], eq, "A = D"),
-            Constraint([A,E], gt, "A > E"),
-            Constraint([B,E], gt, "B > E"),
-            Constraint([C,E], gt, "C > E"),
-            Constraint([D,E], gt, "D > E"),
+            Constraint([E,A], lt, "E < A"),
+            Constraint([E,B], lt, "E < B"),
+            Constraint([E,C], lt, "E < C"),
+            Constraint([E,D], lt, "E < D"),
             Constraint([B,D], ne, "B != D")])
 
 csp3 = CSP("csp3", {A,B,C,D,E},
            [Constraint([A,B], ne, "A != B"),
             Constraint([A,D], lt, "A < D"),
-            Constraint([A,E], lambda a,e: (a-e)%2 == 1, "A-E is odd"), # A-E is odd
+            Constraint([A,E], lambda a,e: (a-e)%2 == 1, "A-E is odd"),
             Constraint([B,E], lt, "B < E"),
             Constraint([D,C], lt, "D < C"),
             Constraint([C,E], ne, "C != E"),
@@ -73,25 +76,23 @@ def adjacent(x,y):
    """True when x and y are adjacent numbers"""
    return abs(x-y) == 1
 
-csp4 = CSP("csp4", {A,B,C,D,E},
+csp4 = CSP("csp4", {A,B,C,D},
            [Constraint([A,B], adjacent, "adjacent(A,B)"),
             Constraint([B,C], adjacent, "adjacent(B,C)"),
             Constraint([C,D], adjacent, "adjacent(C,D)"),
-            Constraint([D,E], adjacent, "adjacent(D,E)"),
             Constraint([A,C], ne, "A != C"),
-            Constraint([B,D], ne, "B != D"),
-            Constraint([C,E], ne, "C != E")])
+            Constraint([B,D], ne, "B != D") ])
 
 def meet_at(p1,p2):
     """returns a function of two words that is true 
-                 when the words intersect at postions p1, p2.
+                 when the words intersect at positions p1, p2.
     The positions are relative to the words; starting at position 0.
     meet_at(p1,p2)(w1,w2) is true if the same letter is at position p1 of word w1 
          and at position p2 of word w2.
     """
     def meets(w1,w2):
         return w1[p1] == w2[p2]
-    meets.__name__ = "meet_at("+str(p1)+','+str(p2)+')'
+    meets.__name__ = f"meet_at({p1},{p2})"
     return meets
 
 one_across = Variable('one_across', {'ant', 'big', 'bus', 'car', 'has'}, position=(0.3,0.9))
@@ -179,6 +180,6 @@ def test_csp(CSP_solver, csp=csp1,
     print("Testing csp with",CSP_solver.__doc__)
     sol0 = CSP_solver(csp)
     print("Solution found:",sol0)
-    assert sol0 in solutions, "Solution not correct for "+str(csp)
+    assert sol0 in solutions, f"Solution not correct for {csp}"
     print("Passed unit test")
 

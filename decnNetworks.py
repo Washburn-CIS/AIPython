@@ -1,16 +1,16 @@
 # decnNetworks.py - Representations for Decision Networks
-# AIFCA Python3 code Version 0.9.5 Documentation at http://aipython.org
+# AIFCA Python code Version 0.9.12 Documentation at https://aipython.org
 # Download the zip file and read aipython.pdf for documentation
 
-# Artificial Intelligence: Foundations of Computational Agents http://artint.info
-# Copyright David L Poole and Alan K Mackworth 2017-2022.
+# Artificial Intelligence: Foundations of Computational Agents https://artint.info
+# Copyright 2017-2023 David L. Poole and Alan K. Mackworth
 # This work is licensed under a Creative Commons
 # Attribution-NonCommercial-ShareAlike 4.0 International License.
-# See: http://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
+# See: https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
 
 from probGraphicalModels import GraphicalModel, BeliefNetwork
 from probFactors import Factor, CPD, TabFactor, factor_times, Prob
-from probVariables import Variable
+from variable import Variable
 import matplotlib.pyplot as plt
 
 class Utility(Factor):
@@ -23,7 +23,7 @@ class UtilityTable(TabFactor, Utility):
         """Creates a factor on vars from the table.
         The table is ordered according to vars.
         """
-        TabFactor.__init__(self,vars,table)
+        TabFactor.__init__(self,vars,table, name="Utility")
         self.position = position
 
 class DecisionVariable(Variable):
@@ -47,6 +47,9 @@ class DecisionNetwork(BeliefNetwork):
         self.utility_factor = [f for f in factors if isinstance(f,Utility)][0]
         self.topological_sort_saved = None
 
+    def __str__(self):
+        return self.title
+
     def split_order(self):
         so = []
         tops = self.topological_sort()
@@ -56,48 +59,59 @@ class DecisionNetwork(BeliefNetwork):
                so.append(v)
         so += [v for v in tops if v not in so]
         return so
-        
-    def show(self):
+
+    def show(self,  fontsize=10,
+                 colors={'utility':'red', 'decision':'lime', 'random':'orange'} ):
         plt.ion()   # interactive
         ax = plt.figure().gca()
         ax.set_axis_off()
-        plt.title(self.title)
+        plt.title(self.title, fontsize=fontsize)
         for par in self.utility_factor.variables:
             ax.annotate("Utility", par.position, xytext=self.utility_factor.position,
-                                    arrowprops={'arrowstyle':'<-'},bbox=dict(boxstyle="sawtooth,pad=1.0",color="red"),
-                                    ha='center')
+                                    arrowprops={'arrowstyle':'<-'},
+                                    bbox=dict(boxstyle="sawtooth,pad=1.0",color=colors['utility']),
+                                    ha='center', va='center', fontsize=fontsize)
         for var in reversed(self.topological_sort()):
             if isinstance(var,DecisionVariable):
-                bbox = dict(boxstyle="square,pad=1.0",color="green")
+                bbox = dict(boxstyle="square,pad=1.0",color=colors['decision'])
             else:
-               bbox = dict(boxstyle="round4,pad=1.0,rounding_size=0.5")
+               bbox = dict(boxstyle="round4,pad=1.0,rounding_size=0.5",color=colors['random'])
             if self.var2parents[var]:
                 for par in self.var2parents[var]:
                     ax.annotate(var.name, par.position, xytext=var.position,
                                     arrowprops={'arrowstyle':'<-'},bbox=bbox,
-                                    ha='center')
+                                    ha='center', va='center', fontsize=fontsize)
             else:
                 x,y = var.position
-                plt.text(x,y,var.name,bbox=bbox,ha='center')
+                plt.text(x,y,var.name,bbox=bbox,ha='center', va='center', fontsize=fontsize)
 
 Weather = Variable("Weather", ["NoRain", "Rain"], position=(0.5,0.8))
 Forecast = Variable("Forecast", ["Sunny", "Cloudy", "Rainy"], position=(0,0.4))
 # Each variant uses one of the following:
 Umbrella = DecisionVariable("Umbrella", ["Take", "Leave"], {Forecast}, position=(0.5,0))
 
-p_weather = Prob(Weather, [], [0.7, 0.3])
-p_forecast = Prob(Forecast, [Weather], [[0.7, 0.2, 0.1], [0.15, 0.25, 0.6]])
-umb_utility = UtilityTable([Weather, Umbrella], [[20, 100], [70, 0]], position=(1,0.4))
+p_weather = Prob(Weather, [], {"NoRain":0.7, "Rain":0.3})
+p_forecast = Prob(Forecast, [Weather], {"NoRain":{"Sunny":0.7, "Cloudy":0.2, "Rainy":0.1},
+                                            "Rain":{"Sunny":0.15, "Cloudy":0.25, "Rainy":0.6}})
+umb_utility = UtilityTable([Weather, Umbrella], {"NoRain":{"Take":20, "Leave":100},
+                                                     "Rain":{"Take":70, "Leave":0}}, position=(1,0.4))
 
 umbrella_dn = DecisionNetwork("Umbrella Decision Network",
                                    {Weather, Forecast, Umbrella},
                                    {p_weather, p_forecast, umb_utility})
 
+# umbrella_dn.show()
+# umbrella_dn.show(fontsize=15)
+
 Umbrella2p = DecisionVariable("Umbrella", ["Take", "Leave"], {Forecast, Weather}, position=(0.5,0))
-umb_utility2p = UtilityTable([Weather, Umbrella2p], [[20, 100], [70, 0]], position=(1,0.4))
+umb_utility2p = UtilityTable([Weather, Umbrella2p], {"NoRain":{"Take":20, "Leave":100},
+                                                     "Rain":{"Take":70, "Leave":0}}, position=(1,0.4))
 umbrella_dn2p = DecisionNetwork("Umbrella Decision Network (extra arc)",
                                    {Weather, Forecast, Umbrella2p},
                                    {p_weather, p_forecast, umb_utility2p})
+
+# umbrella_dn2p.show()
+# umbrella_dn2p.show(fontsize=15)
 
 boolean = [False, True]
 Alarm = Variable("Alarm", boolean, position=(0.25,0.633))
@@ -119,11 +133,17 @@ f_lv = Prob(Leaving,[Alarm],[[0.999, 0.001], [0.12, 0.88]])
 f_re = Prob(Report,[Leaving],[[0.99, 0.01], [0.25, 0.75]])
 f_ss = Prob(See_Sm,[Chk_Sm,Smoke],[[[1,0],[1,0]],[[1,0],[0,1]]])
 
-ut = UtilityTable([Chk_Sm,Fire,Call],[[[0,-200],[-5000,-200]],[[-20,-220],[-5020,-220]]], position=(1,0.633))
+ut = UtilityTable([Chk_Sm,Fire,Call],
+                      [[[0,-200],[-5000,-200]],[[-20,-220],[-5020,-220]]],
+                      position=(1,0.633))
 
 fire_dn = DecisionNetwork("Fire Decision Network",
                           {Tamper,Fire,Alarm,Leaving,Smoke,Call,See_Sm,Chk_Sm,Report},
                           {f_ta,f_fi,f_sm,f_al,f_lv,f_re,f_ss,ut})
+
+# print(ut.to_table())
+# fire_dn.show()
+# fire_dn.show(fontsize=15)
 
 grades = ['A','B','C','F']
 Watched = Variable("Watched", boolean, position=(0,0.9))
@@ -139,34 +159,45 @@ Cheat_2 = DecisionVariable("Cheat_2", boolean, {Cheat_1,Caught1}, position=(0.4,
 p_wa = Prob(Watched,[],[0.7, 0.3])
 p_cc1 = Prob(Caught1,[Watched,Cheat_1],[[[1.0, 0.0], [0.9, 0.1]], [[1.0, 0.0], [0.5, 0.5]]])
 p_cc2 = Prob(Caught2,[Watched,Cheat_2],[[[1.0, 0.0], [0.9, 0.1]], [[1.0, 0.0], [0.5, 0.5]]])
-p_pun = Prob(Punish,[Caught1,Caught2],[[[1.0, 0.0, 0.0], [0.5, 0.4, 0.1]], [[0.6, 0.2, 0.2], [0.2, 0.5, 0.3]]])
-p_gr1 = Prob(Grade_1,[Cheat_1], [{'A':0.2, 'B':0.3, 'C':0.3, 'D': 0.2}, {'A':0.5, 'B':0.3, 'C':0.2, 'D':0.0}])
-p_gr2 = Prob(Grade_2,[Cheat_2], [{'A':0.2, 'B':0.3, 'C':0.3, 'D': 0.2}, {'A':0.5, 'B':0.3, 'C':0.2, 'D':0.0}])
+p_pun = Prob(Punish,[Caught1,Caught2],
+                 [[{"None":0,"Suspension":0,"Recorded":0},
+                   {"None":0.5,"Suspension":0.4,"Recorded":0.1}],
+                  [{"None":0.6,"Suspension":0.2,"Recorded":0.2},
+                   {"None":0.2,"Suspension":0.3,"Recorded":0.3}]])
+p_gr1 = Prob(Grade_1,[Cheat_1], [{'A':0.2, 'B':0.3, 'C':0.3, 'F': 0.2},
+                                 {'A':0.5, 'B':0.3, 'C':0.2, 'F':0.0}])
+p_gr2 = Prob(Grade_2,[Cheat_2], [{'A':0.2, 'B':0.3, 'C':0.3, 'F': 0.2},
+                                 {'A':0.5, 'B':0.3, 'C':0.2, 'F':0.0}])
 p_fg = Prob(Fin_Grd,[Grade_1,Grade_2],
-        {'A':{'A':{'A':1.0, 'B':0.0, 'C': 0.0, 'D':0.0},
-              'B': {'A':0.5, 'B':0.5, 'C': 0.0, 'D':0.0},
-              'C':{'A':0.25, 'B':0.5, 'C': 0.25, 'D':0.0},
-              'D':{'A':0.25, 'B':0.25, 'C': 0.25, 'D':0.25}},
-         'B':{'A':{'A':0.5, 'B':0.5, 'C': 0.0, 'D':0.0},
-              'B': {'A':0.0, 'B':1, 'C': 0.0, 'D':0.0},
-              'C':{'A':0.0, 'B':0.5, 'C': 0.5, 'D':0.0},
-              'D':{'A':0.0, 'B':0.25, 'C': 0.5, 'D':0.25}},
-         'C':{'A':{'A':0.25, 'B':0.5, 'C': 0.25, 'D':0.0},
-              'B': {'A':0.0, 'B':0.5, 'C': 0.5, 'D':0.0},
-              'C':{'A':0.0, 'B':0.0, 'C': 1, 'D':0.0},
-              'D':{'A':0.0, 'B':0.0, 'C': 0.5, 'D':0.5}},
-         'D':{'A':{'A':0.25, 'B':0.25, 'C': 0.25, 'D':0.25},
-              'B': {'A':0.0, 'B':0.25, 'C': 0.5, 'D':0.25},
-              'C':{'A':0.0, 'B':0.0, 'C': 0.5, 'D':0.5},
-              'D':{'A':0.0, 'B':0.0, 'C': 0, 'D':1.0}}})
+        {'A':{'A':{'A':1.0, 'B':0.0, 'C': 0.0, 'F':0.0},
+              'B': {'A':0.5, 'B':0.5, 'C': 0.0, 'F':0.0},
+              'C':{'A':0.25, 'B':0.5, 'C': 0.25, 'F':0.0},
+              'F':{'A':0.25, 'B':0.25, 'C': 0.25, 'F':0.25}},
+         'B':{'A':{'A':0.5, 'B':0.5, 'C': 0.0, 'F':0.0},
+              'B': {'A':0.0, 'B':1, 'C': 0.0, 'F':0.0},
+              'C':{'A':0.0, 'B':0.5, 'C': 0.5, 'F':0.0},
+              'F':{'A':0.0, 'B':0.25, 'C': 0.5, 'F':0.25}},
+         'C':{'A':{'A':0.25, 'B':0.5, 'C': 0.25, 'F':0.0},
+              'B': {'A':0.0, 'B':0.5, 'C': 0.5, 'F':0.0},
+              'C':{'A':0.0, 'B':0.0, 'C': 1, 'F':0.0},
+              'F':{'A':0.0, 'B':0.0, 'C': 0.5, 'F':0.5}},
+         'F':{'A':{'A':0.25, 'B':0.25, 'C': 0.25, 'F':0.25},
+              'B': {'A':0.0, 'B':0.25, 'C': 0.5, 'F':0.25},
+              'C':{'A':0.0, 'B':0.0, 'C': 0.5, 'F':0.5},
+              'F':{'A':0.0, 'B':0.0, 'C': 0, 'F':1.0}}})
 
-utc = UtilityTable([Punish,Fin_Grd],{'None':{'A':100, 'B':90, 'C': 70, 'D':50},
-                                     'Suspension':{'A':40, 'B':20, 'C': 10, 'D':0},
-                                     'Recorded':{'A':70, 'B':60, 'C': 40, 'D':20}}, position=(1,0.5))
+utc = UtilityTable([Punish,Fin_Grd],
+                       {'None':{'A':100, 'B':90, 'C': 70, 'F':50},
+                        'Suspension':{'A':40, 'B':20, 'C': 10, 'F':0},
+                        'Recorded':{'A':70, 'B':60, 'C': 40, 'F':20}},
+                       position=(1,0.5))
 
 cheating_dn = DecisionNetwork("Cheating Decision Network",
-                            {Punish,Caught2,Watched,Fin_Grd,Grade_2,Grade_1,Cheat_2,Caught1,Cheat_1},
-                            {p_wa, p_cc1, p_cc2, p_pun, p_gr1, p_gr2,p_fg,utc})
+                {Punish,Caught2,Watched,Fin_Grd,Grade_2,Grade_1,Cheat_2,Caught1,Cheat_1},
+                {p_wa, p_cc1, p_cc2, p_pun, p_gr1, p_gr2,p_fg,utc})
+
+# cheating_dn.show()
+# cheating_dn.show(fontsize=15)
 
 S0 = Variable('S0', boolean,  position=(0,0.5))
 D0 = DecisionVariable('D0', boolean, {S0},  position=(1/7,0.1))
@@ -185,14 +216,37 @@ p_s3 = Prob(S3, [D2,S2], tr)
 ch3U = UtilityTable([S3],[0,1], position=(7/7,0.9))
 
 ch3 = DecisionNetwork("3-chain", {S0,D0,S1,D1,S2,D2,S3},{p_s0,p_s1,p_s2,p_s3,ch3U})
-#rc3 = RC_DN(ch3)
-#rc3.optimize()
-#rc3.opt_policy
+
+# ch3.show()
+# ch3.show(fontsize=15)
+
+class DictFactor(Factor):
+    """A factor the represents the values using a dicionary"""
+    def __init__(self, *pargs, **kwargs):
+        self.values = {}
+        Factor.__init__(self, *pargs, **kwargs)
+
+    def assign(self, assignment, value):
+        self.values[frozenset(assignment.items())] = value
+
+    def get_value(self, assignment):
+        ass = frozenset(assignment.items())
+        assert ass in self.values, f"assignment {assignment} cannot be evaluated"
+        return self.values[ass]
+    
+class DecisionFunction(DictFactor):
+    def __init__(self, decision, parents):
+        """ A decision function
+        decision is a decision variable
+        parents is a set of variables
+        """
+        self.decision = decision
+        self.parent = parents
+        DictFactor.__init__(self, parents, name=decision.name)
 
 import math
 from probGraphicalModels import GraphicalModel, InferenceMethod
 from probFactors import Factor
-from utilities import dict_union
 from probRC import connected_components
 
 class RC_DN(InferenceMethod):
@@ -206,18 +260,30 @@ class RC_DN(InferenceMethod):
         self.cache = {(frozenset(), frozenset()):1}
         ## self.max_display_level = 3
 
-    def optimize(self, split_order=None):
+    def optimize(self, split_order=None, algorithm=None):
         """computes expected utility, and creates optimal decision functions, where
         elim_order is a list of the non-observed non-query variables in gm
+        algorithm is the (search algortithm to use). Default is self.rc
         """
+        if algorithm is None:
+            algorithm = self.rc
         if split_order == None:
             split_order = self.gm.split_order()
-        self.opt_policy = {}
-        return self.rc({}, self.gm.factors, split_order)
+        self.opt_policy = {v:DecisionFunction(v, v.parents)
+                               for v in self.gm.variables
+                               if isinstance(v,DecisionVariable)}
+        return algorithm({}, self.gm.factors, split_order)
+
+    def show_policy(self):
+        print('\n'.join(df.to_table() for df in self.opt_policy.values()))
 
     def rc0(self, context, factors, split_order):
-        """simplest search algorithm"""
-        self.display(2,"calling rc0,",(context,factors),"with SO",split_order)
+        """simplest search algorithm
+        context is a variable:value dictionary
+        factors is a set of factors
+        split_order is a list of variables in factors that are not in context
+        """
+        self.display(3,"calling rc0,",(context,factors),"with SO",split_order)
         if not factors:
             return 1
         elif to_eval := {fac for fac in factors if fac.can_evaluate(context)}:
@@ -232,16 +298,16 @@ class RC_DN(InferenceMethod):
                 maxres = -math.inf
                 for val in var.domain:
                     self.display(3,"In rc0, branching on",var,"=",val)
-                    newres = self.rc0(dict_union({var:val},context), factors, split_order[1:])
+                    newres = self.rc0({var:val}|context, factors, split_order[1:])
                     if newres > maxres:
                         maxres = newres
                         theval = val
-                self.opt_policy[frozenset(context.items())] = (var,theval)
+                self.opt_policy[var].assign(context,theval)
                 return maxres
             else:
                 total = 0
                 for val in var.domain:
-                    total += self.rc0(dict_union({var:val},context), factors, split_order[1:])
+                    total += self.rc0({var:val}|context, factors, split_order[1:])
                 self.display(3, "rc0 branching on", var,"returning", total)
                 return total
 
@@ -286,37 +352,39 @@ class RC_DN(InferenceMethod):
                 maxres = -math.inf
                 for val in var.domain:
                     self.display(3,"In rc, branching on",var,"=",val)
-                    newres = self.rc(dict_union({var:val},context), factors, split_order[1:])
+                    newres = self.rc({var:val}|context, factors, split_order[1:])
                     if newres > maxres:
                         maxres = newres
                         theval = val
-                self.opt_policy[frozenset(context.items())] = (var,theval)
+                self.opt_policy[var].assign(context,theval)
                 self.cache[ce] = maxres
                 return maxres
             else:
                 total = 0
                 for val in var.domain:
-                    total += self.rc(dict_union({var:val},context), factors, split_order[1:])
+                    total += self.rc({var:val}|context, factors, split_order[1:])
                 self.display(3, "rc branching on", var,"returning", total)
                 self.cache[ce] = total
                 return total
 
 # Umbrella decision network
-#urc = RC_DN(umberella_dn)
-#urc.optimize()
-#urc.opt_policy
+#urc = RC_DN(umbrella_dn) 
+#urc.optimize(algorithm=urc.rc0)  #RC0
+#urc.optimize()    #RC
+#urc.show_policy()
 
 #rc_fire = RC_DN(fire_dn)
 #rc_fire.optimize()
-#rc_fire.opt_policy
+#rc_fire.show_policy()
 
 #rc_cheat = RC_DN(cheating_dn)
 #rc_cheat.optimize()
-#rc_cheat.opt_policy
+#rc_cheat.show_policy()
 
 #rc_ch3 = RC_DN(ch3)
 #rc_ch3.optimize()
-#rc_ch3.opt_policy
+#rc_ch3.show_policy()
+# rc_ch3.optimize(algorithm=rc_ch3.rc0)  # why does that happen?
 
 from probVE import VE
 
@@ -330,7 +398,7 @@ class VE_DN(VE):
     def optimize(self,elim_order=None,obs={}):
         if elim_order == None:
                 elim_order = reversed(self.gm.split_order())
-        policy = []
+        self.opt_policy = {}
         proj_factors = [self.project_observations(fact,obs) 
                            for fact in self.dn.factors]
         for v in elim_order:
@@ -339,17 +407,19 @@ class VE_DN(VE):
                           if v in fac.variables and set(fac.variables) <= v.all_vars]
                 assert len(to_max)==1, "illegal variable order "+str(elim_order)+" at "+str(v)
                 newFac = FactorMax(v, to_max[0])
-                policy.append(newFac.decision_fun)
+                self.opt_policy[v]=newFac.decision_fun
                 proj_factors = [fac for fac in proj_factors if fac is not to_max[0]]+[newFac]
-                self.display(2,"maximizing",v,"resulting factor",newFac.brief() )
+                self.display(2,"maximizing",v )
                 self.display(3,newFac)
             else:
                 proj_factors = self.eliminate_var(proj_factors, v)
         assert len(proj_factors)==1,"Should there be only one element of proj_factors?"
-        value = proj_factors[0].get_value({})
-        return value,policy
+        return proj_factors[0].get_value({})
 
-class FactorMax(Factor):
+    def show_policy(self):
+        print('\n'.join(df.to_table() for df in self.opt_policy.values()))
+
+class FactorMax(TabFactor):
     """A factor obtained by maximizing a variable in a factor.
     Also builds a decision_function. This is based on FactorSum.
     """
@@ -362,39 +432,48 @@ class FactorMax(Factor):
         self.factor = factor
         vars = [v for v in factor.variables if v is not dvar]
         Factor.__init__(self,vars)
-        self.values = [None]*self.size
-        self.decision_fun = FactorDF(dvar,vars,[None]*self.size)
+        self.values = {}
+        self.decision_fun = DecisionFunction(dvar, dvar.parents)
 
     def get_value(self,assignment):
         """lazy implementation: if saved, return saved value, else compute it"""
-        index = self.assignment_to_index(assignment)
-        if self.values[index]:
-            return self.values[index]
+        new_asst = {x:v for (x,v) in assignment.items() if x in self.variables}
+        asst = frozenset(new_asst.items())
+        if asst in self.values:
+            return self.values[asst]
         else:
             max_val = float("-inf")  # -infinity
-            new_asst = assignment.copy()
             for elt in self.dvar.domain:
-                new_asst[self.dvar] = elt
-                fac_val = self.factor.get_value(new_asst)
+                fac_val = self.factor.get_value(assignment|{self.dvar:elt})
                 if fac_val>max_val:
                     max_val = fac_val
                     best_elt = elt
-            self.values[index] = max_val
-            self.decision_fun.values[index] = best_elt
+            self.values[asst] = max_val
+            self.decision_fun.assign(assignment, best_elt)
             return max_val
            
-class FactorDF(TabFactor):
-    """A decision function"""
-    def __init__(self,dvar, vars, values):
-        TabStored.__init__(self,vars,values)
-        self.dvar = dvar
-        self.name = str(dvar)  # Used in printing
-
 # Example queries:
-# v,p = VE_DN(fire_dn).optimize(); print(v)
-# for df in p: print(df,"\n")
+# vf = VE_DN(fire_dn)
+# vf.optimize()
+# vf.show_policy()
 
 # VE_DN.max_display_level = 3  # if you want to show lots of detail
-# v,p = VE_DN(cheating_dn).optimize(); print(v)
-# for df in p: print(df,"\n") # print decision functions
+# vc = VE_DN(cheating_dn)
+# vc.optimize()
+# vc.show_policy()
+
+
+def test(dn):
+    rc0dn = RC_DN(dn)
+    rc0v = rc0dn.optimize(algorithm=rc0dn.rc0)
+    rcdn = RC_DN(dn)
+    rcv = rcdn.optimize()
+    assert abs(rc0v-rcv)<1e-10, f"rc0 produces {rc0v}; rc produces {rcv}"
+    vedn = VE_DN(dn)
+    vev = vedn.optimize()
+    assert abs(vev-rcv)<1e-10, f"VE_DN produces {vev}; RC produces {rcv}"
+    print(f"passed unit test.  rc0, rc and VE gave same result for {dn}")
+
+if __name__ == "__main__":
+    test(fire_dn)
 

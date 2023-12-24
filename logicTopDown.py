@@ -1,12 +1,12 @@
 # logicTopDown.py - Top-down Proof Procedure for Definite Clauses
-# AIFCA Python3 code Version 0.9.5 Documentation at http://aipython.org
+# AIFCA Python code Version 0.9.12 Documentation at https://aipython.org
 # Download the zip file and read aipython.pdf for documentation
 
-# Artificial Intelligence: Foundations of Computational Agents http://artint.info
-# Copyright David L Poole and Alan K Mackworth 2017-2022.
+# Artificial Intelligence: Foundations of Computational Agents https://artint.info
+# Copyright 2017-2023 David L. Poole and Alan K. Mackworth
 # This work is licensed under a Creative Commons
 # Attribution-NonCommercial-ShareAlike 4.0 International License.
-# See: http://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
+# See: https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
 
 from logicProblem import yes
 
@@ -29,9 +29,9 @@ def prove(kb, ans_body, indent=""):
 from logicProblem import triv_KB
 def test():
     a1 = prove(triv_KB,['i_am'])
-    assert a1, "triv_KB proving i_am gave "+str(a1)
+    assert a1, f"triv_KB proving i_am gave {a1}"
     a2 = prove(triv_KB,['i_smell'])
-    assert not a2, "triv_KB proving i_smell gave "+str(a2)
+    assert not a2, f"triv_KB proving i_smell gave {a2}"
     print("Passed unit tests")
 if __name__ == "__main__":
     test()   

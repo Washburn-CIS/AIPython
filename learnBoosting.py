@@ -1,12 +1,12 @@
 # learnBoosting.py - Functional Gradient Boosting
-# AIFCA Python3 code Version 0.9.5 Documentation at http://aipython.org
+# AIFCA Python code Version 0.9.12 Documentation at https://aipython.org
 # Download the zip file and read aipython.pdf for documentation
 
-# Artificial Intelligence: Foundations of Computational Agents http://artint.info
-# Copyright David L Poole and Alan K Mackworth 2017-2022.
+# Artificial Intelligence: Foundations of Computational Agents https://artint.info
+# Copyright 2017-2023 David L. Poole and Alan K. Mackworth
 # This work is licensed under a Creative Commons
 # Attribution-NonCommercial-ShareAlike 4.0 International License.
-# See: http://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
+# See: https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
 
 from learnProblem import Data_set, Learner, Evaluate
 from learnNoInputs import Predict
@@ -91,7 +91,7 @@ def sp_DT_learner(split_to_optimize=Evaluate.squared_loss,
 data = Data_from_file('data/student/student-mat-nq.csv', separator=';',has_header=True,target_index=-1,seed=13,include_only=list(range(30))+[32]) #2.0537973790924946
 #data = Data_from_file('data/SPECT.csv', target_index=0, seed=62) #123)
 #data = Data_from_file('data/mail_reading.csv', target_index=-1)
-#data = Data_from_file('data/holiday.csv', num_train=19, target_index=-1)
+#data = Data_from_file('data/holiday.csv', has_header=True, num_train=19, target_index=-1)
 #learner10 = Boosting_learner(data, sp_DT_learner(split_to_optimize=Evaluate.squared_loss, leaf_prediction=Predict.mean, min_child_weight=10))
 #learner7 = Boosting_learner(data, sp_DT_learner(0.7))
 #learner5 = Boosting_learner(data, sp_DT_learner(0.5))

@@ -1,12 +1,12 @@
 # stripsCSPPlanner.py - CSP planner where actions are represented using STRIPS
-# AIFCA Python3 code Version 0.9.5 Documentation at http://aipython.org
+# AIFCA Python code Version 0.9.12 Documentation at https://aipython.org
 # Download the zip file and read aipython.pdf for documentation
 
-# Artificial Intelligence: Foundations of Computational Agents http://artint.info
-# Copyright David L Poole and Alan K Mackworth 2017-2022.
+# Artificial Intelligence: Foundations of Computational Agents https://artint.info
+# Copyright 2017-2023 David L. Poole and Alan K. Mackworth
 # This work is licensed under a Creative Commons
 # Attribution-NonCommercial-ShareAlike 4.0 International License.
-# See: http://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
+# See: https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
 
 from cspProblem import Variable, CSP, Constraint
 
@@ -60,7 +60,7 @@ class CSP_from_STRIPS(CSP):
         variables = set(self.action_vars) | {feat_time_var[feat][t]
                                             for feat in prob_domain.feature_domain_dict
                                             for t in range(number_stages+1)}
-        CSP.__init__(self, variables, constraints)
+        CSP.__init__(self, "CSP_from_Strips", variables, constraints)
 
     def extract_plan(self,soln):
         return [soln[a] for a in self.action_vars]
@@ -71,7 +71,7 @@ def is_(val):
     #return lambda x: x == val
     def is_fun(x):
         return x == val
-    is_fun.__name__ = "value_is_"+str(val)
+    is_fun.__name__ = f"value_is_{val}"
     return is_fun
 
 def if_(v1,v2):
@@ -79,7 +79,7 @@ def if_(v1,v2):
     #return lambda x1,x2: x1==v1 if x2==v2 else True
     def if_fun(x1,x2): 
         return x1==v1 if x2==v2 else True
-    if_fun.__name__ = "if x2 is "+str(v2)+" then x1 is "+str(v1)
+    if_fun.__name__ = f"if x2 is {v2} then x1 is {v1}"
     return if_fun
 
 def eq_if_not_in_(actset):
@@ -87,7 +87,7 @@ def eq_if_not_in_(actset):
     # return lambda x1, a, x2: x1==x2 if a not in actset else True
     def eq_if_not_fun(x1, a, x2):
         return x1==x2 if a not in actset else True
-    eq_if_not_fun.__name__ = "first and third arguments are equal if action is not in "+str(actset)
+    eq_if_not_fun.__name__ = f"first and third arguments are equal if action is not in {actset}"
     return eq_if_not_fun
 
 def con_plan(prob,horizon):
@@ -98,41 +98,41 @@ def con_plan(prob,horizon):
     return csp.extract_plan(sol) if sol else sol
     
 from searchGeneric import Searcher
-from stripsProblem import delivery_domain
 from cspConsistency import Search_with_AC_from_CSP, Con_solver
-from stripsProblem import Planning_problem, problem0, problem1, problem2, blocks1, blocks2, blocks3
+from stripsProblem import Planning_problem
+import stripsProblem
 
 # Problem 0
-# con_plan(problem0,1) # should it succeed?
-# con_plan(problem0,2) # should it succeed?
-# con_plan(problem0,3) # should it succeed?
+# con_plan(stripsProblem.problem0,1) # should it succeed?
+# con_plan(stripsProblem.problem0,2) # should it succeed?
+# con_plan(stripsProblem.problem0,3) # should it succeed?
 # To use search to enumerate solutions
-#searcher0a = Searcher(Search_with_AC_from_CSP(CSP_from_STRIPS(problem0, 1)))
+#searcher0a = Searcher(Search_with_AC_from_CSP(CSP_from_STRIPS(stripsProblem.problem0, 1)))
 #print(searcher0a.search())  # returns path to solution
 
 ## Problem 1
-# con_plan(problem1,5) # should it succeed?
-# con_plan(problem1,4) # should it succeed?
+# con_plan(stripsProblem.problem1,5) # should it succeed?
+# con_plan(stripsProblem.problem1,4) # should it succeed?
 ## To use search to enumerate solutions:
-#searcher15a = Searcher(Search_with_AC_from_CSP(CSP_from_STRIPS(problem1, 5)))
+#searcher15a = Searcher(Search_with_AC_from_CSP(CSP_from_STRIPS(stripsProblem.problem1, 5)))
 #print(searcher15a.search())  # returns path to solution
 
 ## Problem 2
-#con_plan(problem2, 6)  # should fail??
-#con_plan(problem2, 7)  # should succeed???
+#con_plan(stripsProblem.problem2, 6)  # should fail??
+#con_plan(stripsProblem.problem2, 7)  # should succeed???
 
 ## Example 6.13
-problem3 = Planning_problem(delivery_domain, 
+problem3 = Planning_problem(stripsProblem.delivery_domain, 
                             {'SWC':True, 'RHC':False}, {'SWC':False})
 #con_plan(problem3,2)  # Horizon of 2
 #con_plan(problem3,3)  # Horizon of 3
 
-problem4 = Planning_problem(delivery_domain,{'SWC':True},
+problem4 = Planning_problem(stripsProblem.delivery_domain,{'SWC':True},
                                {'SWC':False, 'MW':False, 'RHM':False})
 
 # For the stochastic local search:
 #from cspSLS import SLSearcher, Runtime_distribution
-# cspplanning15 = CSP_from_STRIPS(problem1, 5) # should succeed
+# cspplanning15 = CSP_from_STRIPS(stripsProblem.problem1, 5) # should succeed
 #se0 = SLSearcher(cspplanning15); print(se0.search(100000,0.5))
 #p = Runtime_distribution(cspplanning15)
 #p.plot_runs(1000,1000,0.7)  # warning will take a few minutes

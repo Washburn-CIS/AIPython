@@ -1,12 +1,12 @@
 # learnLinear.py - Linear Regression and Classification
-# AIFCA Python3 code Version 0.9.5 Documentation at http://aipython.org
+# AIFCA Python code Version 0.9.12 Documentation at https://aipython.org
 # Download the zip file and read aipython.pdf for documentation
 
-# Artificial Intelligence: Foundations of Computational Agents http://artint.info
-# Copyright David L Poole and Alan K Mackworth 2017-2022.
+# Artificial Intelligence: Foundations of Computational Agents https://artint.info
+# Copyright 2017-2023 David L. Poole and Alan K. Mackworth
 # This work is licensed under a Creative Commons
 # Attribution-NonCommercial-ShareAlike 4.0 International License.
-# See: http://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
+# See: https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
 
 from learnProblem import Learner
 import random, math
@@ -14,7 +14,7 @@ import random, math
 class Linear_learner(Learner):
     def __init__(self, dataset, train=None, 
                  learning_rate=0.1, max_init = 0.2,
-                 squashed=True):
+                 squashed=True,  batch_size=10):
         """Creates a gradient descent searcher for a linear classifier.
         The main learning is carried out by learn()
         
@@ -33,6 +33,7 @@ class Linear_learner(Learner):
             self.train = train
         self.learning_rate = learning_rate
         self.squashed = squashed
+        self.batch_size = batch_size
         self.input_features = [one]+dataset.input_features # one is defined below
         self.weights = {feat:random.uniform(-max_init,max_init)
                         for feat in self.input_features}
@@ -57,14 +58,18 @@ class Linear_learner(Learner):
             return doc
 
     def learn(self,num_iter=100):
+        batch_size = min(self.batch_size, len(self.train))
+        d = {feat:0 for feat in self.weights}
         for it in range(num_iter):
             self.display(2,"prediction=",self.predictor_string())
-            for e in self.train:
-                predicted = self.predictor(e)
-                error = predicted - self.target(e)
+            for e in random.sample(self.train, batch_size):
+                error =  self.predictor(e) - self.target(e)
                 update = self.learning_rate*error
                 for feat in self.weights:
-                    self.weights[feat] -=  update*feat(e)
+                    d[feat] +=  update*feat(e)
+            for feat in self.weights:
+                self.weights[feat] -=  d[feat]
+                d[feat]=0
         return self.predictor
 
 def one(e):
@@ -133,7 +138,7 @@ def plot_steps(learner=None,
     else:
         plt.xscale('linear')
     if data is None:
-        data = Data_from_file('data/holiday.csv', num_train=19, target_index=-1)
+        data = Data_from_file('data/holiday.csv', has_header=True, num_train=19, target_index=-1)
         #data = Data_from_file('data/SPECT.csv', target_index=0)
         # data = Data_from_file('data/mail_reading.csv', target_index=-1)
         # data = Data_from_file('data/carbool.csv', target_index=-1)
@@ -159,11 +164,11 @@ if __name__ == "__main__":
     test()
 
 # This generates the figure
-# from learnProblem import Data_set_augmented,prod_feat
-# data = Data_from_file('data/SPECT.csv', prob_test=0.5, target_index=0)
-# dataplus = Data_set_augmented(data,[],[prod_feat])
-# plot_steps(data=data,num_steps=1000)
-# plot_steps(data=dataplus,num_steps=1000)  # warning very slow
+# from learnProblem import Data_set_augmented, prod_feat
+# data = Data_from_file('data/SPECT.csv', prob_test=0.5, target_index=0, seed=123)
+# dataplus = Data_set_augmented(data, [], [prod_feat])
+# plot_steps(data=data, num_steps=1000)
+# plot_steps(data=dataplus, num_steps=1000)  # warning very slow
 def arange(start,stop,step):
     """returns enumeration of values in the range [start,stop) separated by step.
     like the built-in range(start,stop,step) but allows for integers and floats.
@@ -205,8 +210,8 @@ def plot_polynomials(data,
                 max_degree = 5,
                 minx = 0,
                 maxx = 5,
-                num_iter = 100000,
-                learning_rate = 0.0001,
+                num_iter = 1000000,
+                learning_rate = 0.00001,
                 step_size = 0.01,   # for plotting
                 ):
     plt.ion()
@@ -236,6 +241,7 @@ def plot_polynomials(data,
 # data0 = Data_from_file('data/simp_regr.csv', prob_test=0, boolean_features=False, target_index=-1)
 # plot_prediction(data0)
 # plot_polynomials(data0)
+# What if the step size was bigger?
 #datam = Data_from_file('data/mail_reading.csv', target_index=-1)
 #plot_prediction(datam)
 
