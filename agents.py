@@ -37,7 +37,7 @@ class Simulate(Displayable):
     for n time steps.
     Returns a pair of the agent state and the environment state.
     """
-    def __init__(self,agent, environment):
+    def __init__(self, agent, environment):
         self.agent = agent
         self.env = environment
         self.percept = self.env.initial_percept()
@@ -46,7 +46,10 @@ class Simulate(Displayable):
         
     def go(self, n):
         for i in range(n):
-            action = self.agent.select_action(self.percept)
+            if i == 0:   # on the first round, use the agent's initial action
+                action = self.agent.initial_action(self.percept)
+            else:
+                action = self.agent.select_action(self.percept)
             self.display(2,f"i={i} action={action}")
             self.percept = self.env.do(action)
             self.display(2,f"      percept={self.percept}")
