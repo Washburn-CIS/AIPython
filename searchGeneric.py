@@ -33,13 +33,17 @@ class Searcher(Displayable):
     def add_to_frontier(self,path):
         self.frontier.append(path)
         
+    def select_from_frontier(self, frontier):
+        """selects a path to explore from the frontier"""
+        raise NotImplementedError("choice of serach algorithm implemented here")   # abstract method
+        
     def search(self):
         """returns (next) path from the problem's start node
         to a goal node. 
         Returns None if no path exists.
         """
         while not self.empty_frontier():
-            self.path = self.frontier.pop()
+            self.path = self.select_from_frontier(self.frontier)
             self.num_expanded += 1
             if self.problem.is_goal(self.path.end()):    # solution found
                 self.solution = self.path   # store the solution found
@@ -115,8 +119,39 @@ class FrontierPQ(object):
         """iterate through the paths in the frontier"""
         for (_,_,path) in self.frontierpq:
             yield path
-    
-class AStarSearcher(Searcher):
+
+class Depth_first_searcher(Searcher):
+    def select_from_frontier(self, frontier):
+        """selects a path to explore from the frontier"""
+        return frontier.pop()
+
+
+class Breadth_first_searcher(Searcher):
+    def select_from_frontier(self, frontier):
+        """selects a path to explore from the frontier"""
+        ret = frontier[0]
+        del frontier[0]
+        return ret
+
+
+class Searcher_no_cycles(Searcher):
+    def __init__(self, problem):
+        self.visited = set()
+        super().__init__(problem)
+        
+    def add_to_frontier(self, path):
+        if path.end() not in self.visited:
+            self.frontier.append(path)
+            self.visited.add(path.end())
+
+class Breadth_first_searcher_no_cycles(Breadth_first_searcher, Searcher_no_cycles):
+    pass
+
+class Depth_first_searcher_no_cycles(Depth_first_searcher, Searcher_no_cycles):
+    pass
+
+
+class A_star_searcher(Depth_first_searcher):
     """returns a searcher for a problem.
     Paths can be found by repeatedly calling search().
     """
@@ -152,18 +187,6 @@ def test(SearchClass, problem=searchExample.problem1, solutions=[['G','D','B','C
     print("Passed unit test")
 
 if __name__ == "__main__":
-    #test(Searcher)      # what needs to be changed to make this succeed?
-    test(AStarSearcher)
-    
-# example queries:
-# searcher1 = Searcher(searchExample.simp_delivery_graph)   # DFS
-# searcher1.search()  # find first path
-# searcher1.search()  # find next path
-# searcher2 = AStarSearcher(searchExample.simp_delivery_graph)   # A*
-# searcher2.search()  # find first path
-# searcher2.search()  # find next path
-# searcher3 = Searcher(searchExample.cyclic_simp_delivery_graph)   # DFS
-# searcher3.search()  # find first path with DFS. What do you expect to happen?
-# searcher4 = AStarSearcher(searchExample.cyclic_simp_delivery_graph)    # A*
-# searcher4.search()  # find first path
+    #test(Depth_first_searcher)      # what needs to be changed to make this succeed?
+    test(A_star_searcher)
 

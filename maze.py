@@ -4,21 +4,23 @@ from searchProblem import Arc
 from searchProblem import Path
 import searchGeneric
 from searchGeneric import Searcher
-from searchGeneric import BreadthFirstSearcher
-from searchGeneric import BreadthFirstSearcherNoCycles
-from searchGeneric import AStarSearcher
+from searchGeneric import Breadth_first_searcher
+from searchGeneric import Depth_first_searcher
+from searchGeneric import Breadth_first_searcher_no_cycles
+from searchGeneric import Depth_first_searcher_no_cycles
+from searchGeneric import A_star_searcher
 import time
 
 default_maze_str = """
 ***********
-*         *
-*         *
-*         *
-*         *
-*         *
-*         *
-*         *
-*         *
+* *       *
+* *       *
+* *       *
+* *       *
+* *       *
+* *       *
+* *       *
+* *       *
 *         *
 *         *
 *         *
@@ -27,11 +29,12 @@ default_maze_str = """
 ***********"""                 
 
 default_goal_state = (13, 1)
+#default_goal_state = (13, 9)
 default_initial_state = (1, 1)
 
 
 
-class MazePuzzle(Search_problem):
+class Maze_puzzle(Search_problem):
     """An implementation of a sliding n-puzzle (8-puzzle, 15-puzzle, etc)
     """
     
@@ -48,8 +51,6 @@ class MazePuzzle(Search_problem):
               self.passable_coordinates.add((r, c))
         #print(self.passable_coordinates)
           
-        
-    
     def start_node(self):
         """returns start node"""
         return self.inital_state
@@ -75,12 +76,16 @@ class MazePuzzle(Search_problem):
                    filter(lambda s: s in self.passable_coordinates, # filter out those we can visit
                           [(r-1, c), (r+1, c), (r, c-1), (r, c+1)]))  # every possible state
                           
-#    def heuristic(self,n):
-#        return abs(n[0] - self.goal_state[0]) + abs(n[1] - self.goal_state[1])
+    def heuristic(self,n):
+        return abs(n[0] - self.goal_state[0]) + abs(n[1] - self.goal_state[1])
           
         
-problem = MazePuzzle()
-searcher = AStarSearcher(problem)
+problem = Maze_puzzle()
+searcher = Depth_first_searcher(problem)
+#searcher = Breadth_first_searcher(problem)
+#searcher = Breadth_first_searcher_no_cycles(problem)
+#searcher = Depth_first_searcher_no_cycles(problem)
+#searcher = A_star_searcher(problem)
 start_time = time.perf_counter()
 sol = searcher.search()
 end_time = time.perf_counter()
