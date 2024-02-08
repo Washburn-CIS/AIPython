@@ -32,7 +32,7 @@ class Environment(Displayable):
         returns the next percept """
         raise NotImplementedError("Environment.do")   # abstract method
 
-class Simulate(Displayable):
+class Simulator(Displayable):
     """simulate the interaction between the agent and the environment
     for n time steps.
     Returns a pair of the agent state and the environment state.
@@ -45,6 +45,7 @@ class Simulate(Displayable):
         self.action_history = []
         
     def go(self, n):
+        """runs the simulation for 'n' rounds"""
         for i in range(n):
             if i == 0:   # on the first round, use the agent's initial action
                 action = self.agent.initial_action(self.percept)
