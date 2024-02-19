@@ -91,6 +91,8 @@ class Delivery_bots_map(Environment):
                 self.robot = dest		# update agents location
                 return {'location': dest}	# inform agent of state change
             # other tiles are considered impassable for now, no update to agent
+        else:
+            return {'location': self.robot, 'error': 'INVALID_MOVE'}
                   
     
     
