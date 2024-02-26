@@ -8,16 +8,16 @@
 # Attribution-NonCommercial-ShareAlike 4.0 International License.
 # See: https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en
 
-def minimax(node,depth):
+def minimax(node,depth=0,max_depth=float("inf")):
     """returns the value of node, and a best path for the agents
     """
-    if node.isLeaf():
+    if node.is_leaf() or depth >= max_depth:
         return node.evaluate(),None
     elif node.isMax:
         max_score = float("-inf")
         max_path = None
         for C in node.children():
-            score,path = minimax(C,depth+1)
+            score,path = minimax(C,depth+1,max_depth)
             if score > max_score:
                 max_score = score
                 max_path = C.name,path
@@ -26,25 +26,25 @@ def minimax(node,depth):
         min_score = float("inf")
         min_path = None
         for C in node.children():
-            score,path = minimax(C,depth+1)
+            score,path = minimax(C,depth+1,max_depth)
             if score < min_score:
                 min_score = score
                 min_path = C.name,path
         return min_score,min_path
 
-def minimax_alpha_beta(node,alpha,beta,depth=0):
+def minimax_alpha_beta(node,alpha=float("-inf"),beta=float("inf"),depth=0,max_depth=float("inf")):
     """node is a Node, alpha and beta are cutoffs, depth is the depth
     returns value, path
     where path is a sequence of nodes that results in the value
     """
     node.display(2,"  "*depth,"minimax_alpha_beta(",node.name,", ",alpha, ", ", beta,")")
     best=None      # only used if it will be pruned
-    if node.isLeaf():
+    if node.is_leaf() or depth >= max_depth:
         node.display(2,"  "*depth,"returning leaf value",node.evaluate())
         return node.evaluate(),None
     elif node.isMax:
         for C in node.children():
-            score,path = minimax_alpha_beta(C,alpha,beta,depth+1)
+            score,path = minimax_alpha_beta(C,alpha,beta,depth+1,max_depth)
             if score >= beta:    # beta pruning
                 node.display(2,"  "*depth,"pruned due to beta=",beta,"C=",C.name)
                 return score, None 
@@ -55,7 +55,7 @@ def minimax_alpha_beta(node,alpha,beta,depth=0):
         return alpha,best
     else:
         for C in node.children():
-            score,path = minimax_alpha_beta(C,alpha,beta,depth+1)
+            score,path = minimax_alpha_beta(C,alpha,beta,depth+1,max_depth)
             if score <= alpha:     # alpha pruning
                 node.display(2,"  "*depth,"pruned due to alpha=",alpha,"C=",C.name)
                 return score, None
@@ -65,7 +65,7 @@ def minimax_alpha_beta(node,alpha,beta,depth=0):
         node.display(2,"  "*depth,"returning min beta",beta,"best=",best)
         return beta,best
 
-from masProblem import fig10_5, Magic_sum, Node
+#from masProblem import fig10_5, Magic_sum, Node
 
 # Node.max_display_level=2   # print detailed trace
 # minimax_alpha_beta(fig10_5, -9999, 9999,0)

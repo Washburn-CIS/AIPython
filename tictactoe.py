@@ -90,11 +90,11 @@ class TicTacToe(Node):
    
 n = TicTacToe()
 from ast import literal_eval
-while n.legal_moves() and not n.evaluate():
+while next(n.legal_moves(), False) and not n.evaluate():
   print_game_board(n.board)
   print('')
   if not n.isMax:
-    move = literal_eval(input("enter move: "))
+    move = literal_eval(input("enter move (x,y): "))
     n = TicTacToe(True, move, n.prior_moves, n.board)
   else:
     move = literal_eval(minimax_alpha_beta(n)[1][0])
