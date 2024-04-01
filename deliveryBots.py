@@ -20,9 +20,24 @@
 #  * agents are present on a tile at the start of the game
 #  * agents can move to adjacent passable tiles on a turn
 
-# TODO: implement portal tiles 
-#         - will use 'X' to denote tile
-#         - destination will be specified in json
+
+# TODO: add heading
+# TODO: add turn comands
+# TODO: can view packages within cone vision (3 forward, triangle)
+
+# Package truck moves around and drops packages but has hidden strategy
+# possibly more than one truck
+# packages have a value (integer > 0)
+# goal of the game is get the most delivery value
+# robots can hold a maximum of 3 packages
+# agents can be sensed within 10 squares manhattan distance
+# agents have a type (truck/robot) and a ID
+# packages have an ID
+# deliver command delivers all packages meant for current destination
+# add "pick up <package num> command
+# robots sense scores at all times
+# robots sense # of unclaimed packages at all times 
+# if two robots attempt to pick up the same package at the same time, result will be uniformly random
 # TODO: fully describe map format
 # TODO: fully describe percept format
 # TODO: complete tile types (from discussion board)
@@ -42,7 +57,9 @@ class Delivery_bots_map(Environment):
 
     def __init__(self, map):
         """initializes the game environment
-           map is a string with multiple lines
+        
+        map is a dictionary with the following properties:
+           'map': a string with multiple lines
              - each line represents a row in the map
              - each character in a line represents a tile in the map
                 + A '.' character is a passable tile
@@ -50,6 +67,9 @@ class Delivery_bots_map(Environment):
                 + A '!' character is a hazardous tile
                 + A '*' character is where the agent will start
                 + A '@' character is the location where the package must be delivered
+           'portals': a tuple of 2-tuples of coordinates (2-tuples of integers). 
+             - each pair of coordinates identifies two portal tiles that are linked 
+           'packages': ***
         """
         self.stuck = False
         self.map = dict()
@@ -71,7 +91,35 @@ class Delivery_bots_map(Environment):
         print(self.map)
 
     def initial_percept(self):
-        """returns the initial percept for the agent"""
+        """returns the initial percept for the agent
+        
+           additional percepts will be delivered to the agent during execution of the 'do'
+           method. Percepts will always be a dictionary with string keys. Below is a description
+           of the keys and values associated with those keys in a percept:
+
+           key: 'map'
+               a 2-d tuple of characters representing tiles on the map. Coordinates of those tiles
+               will begin at 0 and will be in row, column order. Characters used will denote the following:
+                   '#' - impassable tile
+                   '!' - hazardous tile
+                   '.' - passable tile
+           
+           key: 'location'
+               A 2-d tuple indicating the location of the tile the agent is located on (row, column).
+               
+           key: 'portal'
+               A list of 2-tuples of coordinates (2-tuples of integers); endpoints of bi-directional
+               portals. For example: [((1,1),(2,2)), ((4,5), (0,1))] indicates that
+               there are four portals and that stepping on to 1,1 will cause a robot to appear at 
+               (2,2), stepping on to (2,2) will cause a robot to appear at (1,1), stepping on (4,5)
+               will cause a robot to appear at (0,1) and stepping on to (0,1) will cause a robot
+               to appear at (4,5). 
+               
+           key: 'package_dest'  ***TODO
+           
+           key: 'other_agent'   ***TODO
+           
+        """
         return { 'map': self.map, 
                  'package_dest': self.package_dest, 
                  'location': self.robot}
@@ -84,7 +132,15 @@ class Delivery_bots_map(Environment):
     
     def do(self, action):
         """allows agents to move around the map and deliver packages
-           actions are one of the following strings: north, south, east, west, and deliver"""
+           actions are one of the following strings: 
+           
+           action: 'north'  -- moves the agent one tile north (if possible)
+           action: 'east'  -- moves the agent one tile north (if possible)
+           action: 'south'  -- moves the agent one tile north (if possible)
+           action: 'west'  -- moves the agent one tile north (if possible)
+           action: 'deliver'  -- drops package held by the agent ***TODO
+
+        """
         
         self.display(2, f"robot is currently at {self.robot[0]}, {self.robot[1]}")
         self.display(2, "robot issued action: " + action)
@@ -131,7 +187,7 @@ class Simple_Delivery_Agent(Agent):
     
     
     
-    
+# TODO: *** add package truck agent class
     
     
     
