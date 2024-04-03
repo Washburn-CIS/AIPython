@@ -17,7 +17,7 @@ from masMiniMax import minimax_alpha_beta
 
 x_is_human = False
 o_is_human = False
-max_depth=8
+max_depth=4
 
 initial_game_board = (
   (None,)*8, 
@@ -88,7 +88,7 @@ class Reversi(Node):
     self.isMax = isMax
     self.player = player
     self.other_player = 'X' if player == 'O' else 'O'
-
+    
     # validate input
     assert len(self.board) == 8
     for row in self.board:
@@ -142,6 +142,7 @@ class Reversi(Node):
            elif self.other_player == c:
              dif -= 1
     return dif
+
     
   def evaluateO(self):
     dif = 0
@@ -178,7 +179,7 @@ print('final state:')
 print_game_board(n.board)
 dif = 0
 for r in n.board:
-  for c in n.board:
+  for c in r:
     if c == 'X':
       dif += 1
     elif c == 'O':
