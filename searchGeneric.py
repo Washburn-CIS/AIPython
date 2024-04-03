@@ -45,6 +45,8 @@ class Searcher(Displayable):
         while not self.empty_frontier():
             self.path = self.select_from_frontier(self.frontier)
             self.num_expanded += 1
+            if self.num_expanded % 1000 == 0:
+              self.display(1, f"Expanded {self.num_expanded} nodes...\n")
             if self.problem.is_goal(self.path.end()):    # solution found
                 self.solution = self.path   # store the solution found
                 self.display(1, f"Solution: {self.path} (cost: {self.path.cost})\n",
@@ -136,13 +138,13 @@ class Breadth_first_searcher(Searcher):
 
 class Searcher_no_cycles(Searcher):
     def __init__(self, problem):
-        self.visited = set()
+        self.visited = dict()
         super().__init__(problem)
         
     def add_to_frontier(self, path):
-        if path.end() not in self.visited:
+        if path.end() not in self.visited or path.cost < self.visited[path.end()]:
             self.frontier.append(path)
-            self.visited.add(path.end())
+            self.visited[path.end()] = cost
 
 class Breadth_first_searcher_no_cycles(Breadth_first_searcher, Searcher_no_cycles):
     pass
@@ -170,6 +172,29 @@ class A_star_searcher(Depth_first_searcher):
         value = path.cost+self.problem.heuristic(path.end())
         self.frontier.add(path, value)
 
+
+class A_star_searcher_no_cycles(Depth_first_searcher):
+    """returns a searcher for a problem.
+    Paths can be found by repeatedly calling search().
+    """
+
+    def __init__(self, problem):
+        self.visited = dict()
+        super().__init__(problem)
+
+    def initialize_frontier(self):
+        self.frontier = FrontierPQ()
+
+    def empty_frontier(self):
+        return self.frontier.empty()
+
+    def add_to_frontier(self,path):
+        """add path to the frontier with the appropriate cost"""
+        if path.end() not in self.visited or path.cost < self.visited[path.end()]:
+            self.visited[path.end()] = path.cost
+            self.frontier.add(path, path.cost+self.problem.heuristic(path.end()))
+
+
 import searchExample
 
 def test(SearchClass, problem=searchExample.problem1, solutions=[['G','D','B','C','A']] ):
@@ -189,4 +214,6 @@ def test(SearchClass, problem=searchExample.problem1, solutions=[['G','D','B','C
 if __name__ == "__main__":
     #test(Depth_first_searcher)      # what needs to be changed to make this succeed?
     test(A_star_searcher)
+
+
 
