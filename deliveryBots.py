@@ -38,7 +38,7 @@
 # robots sense scores at all times
 # robots sense # of unclaimed packages at all times 
 # if two robots attempt to pick up the same package at the same time, result will be uniformly random
-# TODO: fully describe map format
+
 # TODO: fully describe percept format
 # TODO: complete tile types (from discussion board)
 # TODO: determine multi-player semantics (from discussion board)
@@ -49,9 +49,16 @@ from agents import Environment, Agent
 import random
 
 # example map description
-simple_map = """@...
+# dictionary of:
+#    'map' -> String: see Delivery_bots_map constructor docstring
+#    'package' -> Tuple_of(4-Tuple_of integer): see Delivery_bots_map constructor docstring
+simple_map = {
+  'map': """@...
 !##.
-...*"""
+...*""",
+  'portals': ((0,1,1,3))
+  'packages': ((2,3,0,0,1))
+}
 
 class Delivery_bots_map(Environment):
 
@@ -65,15 +72,18 @@ class Delivery_bots_map(Environment):
                 + A '.' character is a passable tile
                 + A '#' character is an impassable tile
                 + A '!' character is a hazardous tile
-                + A '*' character is where the agent will start
-                + A '@' character is the location where the package must be delivered
-           'portals': a tuple of 2-tuples of coordinates (2-tuples of integers). 
+                + A '*' character is where an agent will start
+           'portals': a tuple of 4-tuples of integers (two sets of row/col coordinates)
              - each pair of coordinates identifies two portal tiles that are linked 
-           'packages': ***
+           'packages': a tuple of 5-tuples of integers including, in order: 
+                    a pair of coordinates (row, column) of package location and destination
+                    the value of the package when delivered
         """
         self.stuck = False
+        self.portals = map['portals']
+        self.packages = map['packages']
         self.map = dict()
-        rows = map.split('\n')   	# split map up in to single strings
+        rows = map['map'].split('\n')   	# split map up in to single strings
         self.rows = len(rows)
         self.cols = len(rows[0])
         
@@ -82,9 +92,6 @@ class Delivery_bots_map(Environment):
                 tile = rows[r][c]		# find the tile type
                 if tile == '*':			# convert starting locations to passable tiles
                     self.robot = (r, c)
-                    tile = '.'
-                elif tile == '@':		# convert destinations to passable tiles
-                    self.package_dest = (r, c)
                     tile = '.'
                 self.map[r, c] = rows[r][c]	# record the tile in the tiles dictionary
                 
@@ -185,9 +192,6 @@ class Simple_Delivery_Agent(Agent):
         #      you should update the code to avoid obstacles
         return random.choice(('north', 'south', 'east', 'west'))
     
-    
-    
-# TODO: *** add package truck agent class
-    
+
     
     
