@@ -101,8 +101,12 @@ class Delivery_bots_map(Environment):
                    '!' - hazardous tile
                    '.' - passable tile
            
-           key: 'location'
-               A 2-d tuple indicating the location of the tile the agent is located on (row, column).
+           key: 'your_id'
+               An integer representing the ID of the agent receiving the percept
+           
+           key: 'locations'
+               A list of 2-d tuples indicating the location of all of the agents in the 
+               simulation. Indexes are ID's and locations are (row, column).
                
            key: 'packages'  a list of 4-tuples of integers describing packages:
                ID
@@ -118,7 +122,6 @@ class Delivery_bots_map(Environment):
         self.stuck = [False]*len(agents)
         self.held_packages = [[]]*len(agents)
         self.scores = [0]*len(agents)
-        
         percepts = []
         for i in range(len(agents)):
             percept = {}
@@ -130,7 +133,8 @@ class Delivery_bots_map(Environment):
                       self.packages[i][3], 
                       self.packages[i][4]) for i in packages]
             percept['map'] = self.map
-            percept['location'] = self.agent_locations[i]
+            percept['your_id'] = i
+            percept['locations'] = self.agent_locations
             percepts.append(percept)
         return percepts
                  
@@ -197,21 +201,16 @@ class Delivery_bots_map(Environment):
                 if self.map[dest] == '.':		# passable tile
                     self.agent_locations[i] = dest	# update agents location
                     self.display(2, f"agent is now at {self.agent_locations[i][0]}, {self.agent_locations[i][1]}")
-                    percept['location'] = dest	# inform agent of state change
-                    
-                    
+
                 elif self.map[dest] == '!':		# hazard tile
                     self.display(2, "agent got stuck")
                     self.stuck[i] = True		# agent will be stuck next turn
                     self.agent_locations[i] = dest		# update agents location
                     self.display(2, f"agent is now at {self.agent_locations[i][0]}, {self.agent_locations[i][1]}")
-                    percept['location'] = dest
-                    
-                    
+
                 # other tiles are considered impassable for now, no update to agent
                 else:
                     self.display(2, "agent issued invalid move")
-                    percept['location'] = self.agent_locations[i]
                     percept['error'] ='INVALID_MOVE'
                    
             elif len(action) > 7 and action[0:7] == 'pickup ':
@@ -225,12 +224,10 @@ class Delivery_bots_map(Environment):
                     self.display(2, f"agent {i} picked up package {pnum}")
                 else: 
                     self.display(2, "agent issued invalid move")
-                    percept['location'] = self.agent_locations[i]
                     percept['error'] ='INVALID_MOVE'
                 
             elif action != 'skip':
                 self.display(2, "agent issued invalid move")
-                percept['location'] = self.agent_locations[i]
                 percept['error'] ='INVALID_MOVE'
                 
             
@@ -252,15 +249,19 @@ class Delivery_bots_map(Environment):
                       self.packages[i][4]) for i in packages]
             percepts.append(percept)
         
+        # inform all agents of delivered packages
         if delivered_packages:
             for p in percepts:
                 p['delivered_packages'] = delivered_packages
                 
+        # inform all agents of all agent movements
+        for p in percepts:
+            p['locations'] = self.agent_locations
                 
-        # TODO: inform of other agent movements
-        
         return percepts   
-    
+
+
+# TODO: develop a web-based log visualizer for deliverybots
 
 class Simple_Delivery_Agent(Agent):
 

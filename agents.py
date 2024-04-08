@@ -32,6 +32,11 @@ class Environment(Displayable):
         returns the next percept """
         raise NotImplementedError("Environment.do")   # abstract method
 
+
+# TODO: develop networked agent that sends and receives a serialized percepts and actions
+# TODO: develop networked environment that sends and receives a serialized percepts and actions
+# TODO: develop a log listener interface for the simulator
+
 class Simulator(Displayable): 
     """simulate the interaction between the agent and the environment
     for n time steps.
