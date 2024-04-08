@@ -23,35 +23,43 @@ class Agent(Displayable):
         raise NotImplementedError("go")   # abstract method
 
 class Environment(Displayable):
-    def initial_percept(self):
-        """returns the initial percept for the agent"""
+    def initial_percept(self, *agents):
+        """returns the initial percepts for the agents"""
         raise NotImplementedError("initial_percept")   # abstract method
 
-    def do(self, action):
-        """does the action in the environment
+    def do(self, *action):
+        """does the actions in the environment
         returns the next percept """
         raise NotImplementedError("Environment.do")   # abstract method
 
-class Simulator(Displayable):
+class Simulator(Displayable): 
     """simulate the interaction between the agent and the environment
     for n time steps.
     Returns a pair of the agent state and the environment state.
     """
-    def __init__(self, agent, environment):
-        self.agent = agent
+    def __init__(self, environment, *agents):
+        self.agents = agents
         self.env = environment
-        self.percept = self.env.initial_percept()
-        self.percept_history = [self.percept]
+        self.percept_history = []
         self.action_history = []
         
     def go(self, n):
         """runs the simulation for 'n' rounds"""
+        percepts = self.env.initial_percept(self.agents)
+        self.display(2, f"initial percepts: {percepts}")
+        self.display(2, f"map: \n{self.env}")
         for i in range(n):
+            self.percept_history.append(percepts)
+            actions = []
             if i == 0:   # on the first round, use the agent's initial action
-                action = self.agent.initial_action(self.percept)
+                for i in range(len(self.agents)):
+                    actions.append(self.agents[i].initial_action(percepts[i]))
+                    percepts = self.env.do(actions)
             else:
-                action = self.agent.select_action(self.percept)
-            self.display(2,f"i={i} action={action}")
-            self.percept = self.env.do(action)
-            self.display(2,f"      percept={self.percept}")
+                for i in range(len(self.agents)):
+                    actions.append(self.agents[i].select_action(percepts[i]))
+                    percepts = self.env.do(actions)
+                    print(percepts)
+            self.action_history.append(actions)
+            print(self.env)
 
