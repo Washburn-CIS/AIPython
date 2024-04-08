@@ -51,15 +51,14 @@ class Simulator(Displayable):
         for i in range(n):
             self.percept_history.append(percepts)
             actions = []
-            if i == 0:   # on the first round, use the agent's initial action
-                for i in range(len(self.agents)):
+            for i in range(len(self.agents)):
+                self.display(2, f"agent {i} received percept: {percepts[i]}")
+                if i == 0:   # on the first round, use the agent's initial action
                     actions.append(self.agents[i].initial_action(percepts[i]))
-                    percepts = self.env.do(actions)
-            else:
-                for i in range(len(self.agents)):
+                else:
                     actions.append(self.agents[i].select_action(percepts[i]))
-                    percepts = self.env.do(actions)
-                    print(percepts)
+                self.display(2, f"agent {i} issued action: {actions[i]}")
+            percepts = self.env.do(actions)
             self.action_history.append(actions)
             print(self.env)
 

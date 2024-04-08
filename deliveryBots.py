@@ -42,7 +42,7 @@ import random
 #    'map' -> String: see Delivery_bots_map constructor docstring
 #    'package' -> Tuple_of(4-Tuple_of integer): see Delivery_bots_map constructor docstring
 simple_map = {
-  'map': """....
+  'map': """...*
 !##.
 ...*""",
   'packages': ((2,0,0,0,1),)
@@ -168,7 +168,6 @@ class Delivery_bots_map(Environment):
         delivered_packages = []
         
         for i in range(len(self.agents)):
-
             agent = self.agents[i]
             action = actions[i]
             percept = {}
@@ -216,6 +215,7 @@ class Delivery_bots_map(Environment):
                     percept['error'] ='INVALID_MOVE'
                    
             elif len(action) > 7 and action[0:7] == 'pickup ':
+                # TODO: check for multiple robots picking up the same package -- assign randomly
                 pnum = int(action[7:])
                 if pnum in packages and len(self.held_packages[i]) <4:
                     p = self.packages[pnum]
@@ -267,9 +267,10 @@ class Simple_Delivery_Agent(Agent):
     def select_action(self, percept):
         #TODO: this does not fully implement the assignment. 
         #      you should update the code to avoid obstacles
-        if 'packages' in percept:
+        if 'packages' in percept: # pickup a package whenever available
             pnum = percept['packages'][0][0]
             return 'pickup ' + str(pnum)
+            
         return random.choice(('north', 'south', 'east', 'west'))
     
 
