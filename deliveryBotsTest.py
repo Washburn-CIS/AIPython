@@ -1,10 +1,24 @@
 from deliveryBots import *
+from deliveryBotsVisualization import *
 from agents import *
 
-env = Delivery_bots_map(simple_map)
+import tkinter as tk
+import PIL
+from PIL import Image, ImageTk
+
+
+root = tk.Tk()
+root.title("Delivery Bots")    
+
+env = Delivery_bots_visualization(simple_map, root, 100)
 agent0 = Simple_Delivery_Agent()
 agent1 = Simple_Delivery_Agent()
 env.max_display_level = 2
 sim = Simulator(env, agent0, agent1)
-sim.go(100)
 
+def advance():
+    sim.go(1)
+    root.after(1000, advance)
+
+root.after(1000, advance)
+root.mainloop()

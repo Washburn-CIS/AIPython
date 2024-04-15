@@ -155,6 +155,9 @@ class Delivery_bots_map(Environment):
     def get_packages_on_tile(self, r, c):
         return [i for i,p in self.packages.items() if p[0] == r and p[1] == c]
     
+    def update_tile(self, r, c):
+        pass
+    
     def do(self, actions):
         """allows agents to move around the map and deliver packages
            actions is a list of one of the following strings: 
@@ -170,6 +173,7 @@ class Delivery_bots_map(Environment):
         
         percepts = []
         delivered_packages = []
+        updated_tiles = set()
         
         for i in range(len(self.agents)):
             agent = self.agents[i]
@@ -199,10 +203,14 @@ class Delivery_bots_map(Environment):
           
             if dest and dest in self.map:  # if the destination is valid...
                 if self.map[dest] == '.':		# passable tile
+                    updated_tiles.add(self.agent_locations[i])
+                    updated_tiles.add(dest)
                     self.agent_locations[i] = dest	# update agents location
                     self.display(2, f"agent is now at {self.agent_locations[i][0]}, {self.agent_locations[i][1]}")
 
                 elif self.map[dest] == '!':		# hazard tile
+                    updated_tiles.add(self.agent_locations[i])
+                    updated_tiles.add(dest)
                     self.display(2, "agent got stuck")
                     self.stuck[i] = True		# agent will be stuck next turn
                     self.agent_locations[i] = dest		# update agents location
@@ -219,6 +227,7 @@ class Delivery_bots_map(Environment):
                 if pnum in packages and len(self.held_packages[i]) <4:
                     p = self.packages[pnum]
                     del self.packages[pnum]
+                    updated_tiles.add(self.agent_locations[i])
                     percept['pickedup'] = (pnum, p[2], p[3], p[4])
                     self.held_packages[i].append((pnum, p[2], p[3], p[4]))
                     self.display(2, f"agent {i} picked up package {pnum}")
@@ -257,6 +266,9 @@ class Delivery_bots_map(Environment):
         # inform all agents of all agent movements
         for p in percepts:
             p['locations'] = self.agent_locations
+            
+        for r,c in updated_tiles:
+            self.update_tile(r, c)
                 
         return percepts   
 
