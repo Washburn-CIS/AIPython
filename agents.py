@@ -47,23 +47,25 @@ class Simulator(Displayable):
         self.env = environment
         self.percept_history = []
         self.action_history = []
+        self.percepts = []
         
-    def go(self, n):
+    def go(self, n=1):
         """runs the simulation for 'n' rounds"""
-        percepts = self.env.initial_percept(self.agents)
-        self.display(2, f"initial percepts: {percepts}")
-        self.display(2, f"map: \n{self.env}")
+        if not self.percepts:
+            self.percepts = self.env.initial_percept(self.agents)
+            self.display(2, f"initial percepts: {self.percepts}")
         for i in range(n):
-            self.percept_history.append(percepts)
+            self.percept_history.append(self.percepts)
+            self.display(2, f"Round {len(self.percept_history)}")
+            self.display(2, f"environment: \n{self.env}")
             actions = []
             for i in range(len(self.agents)):
-                self.display(2, f"agent {i} received percept: {percepts[i]}")
-                if i == 0:   # on the first round, use the agent's initial action
-                    actions.append(self.agents[i].initial_action(percepts[i]))
+                self.display(2, f"agent {i} received percept: {self.percepts[i]}")
+                if not self.action_history:   # on the first round, use the agent's initial action
+                    actions.append(self.agents[i].initial_action(self.percepts[i]))
                 else:
-                    actions.append(self.agents[i].select_action(percepts[i]))
+                    actions.append(self.agents[i].select_action(self.percepts[i]))
                 self.display(2, f"agent {i} issued action: {actions[i]}")
-            percepts = self.env.do(actions)
+            self.percepts = self.env.do(actions)
             self.action_history.append(actions)
-            print(self.env)
 
