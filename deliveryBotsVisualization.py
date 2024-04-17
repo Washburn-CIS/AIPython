@@ -6,7 +6,7 @@ from PIL import Image, ImageTk
 
 class Delivery_bots_visualization(Delivery_bots_map):
 
-    def __init__(self, map, root, sprite_size=50, *agentSpriteFiles):
+    def __init__(self, map, root, sprite_size, *agentSpriteFiles):
         super().__init__(map)
     
         self.root = root
@@ -25,6 +25,7 @@ class Delivery_bots_visualization(Delivery_bots_map):
         
         # load agent sprites
         self.agent_sprites = [Image.open(fn).convert("RGBA") for fn in agentSpriteFiles]
+        assert len(self.agent_sprites) == len(self.agent_locations), "need one sprite for each agent"
         
         # load other sprites
         self.package_sprite = Image.open("package.png").convert("RGBA")

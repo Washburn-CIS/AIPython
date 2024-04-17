@@ -115,7 +115,6 @@ class Delivery_bots_map(Environment):
                value
            
            key: 'delivered_packages' a list of 2-tuples of agent id and package id
-           key: 'other_agent'   ***TODO
            
         """
         self.agents = agents
@@ -177,6 +176,7 @@ class Delivery_bots_map(Environment):
         percepts = []
         delivered_packages = []
         updated_tiles = set()
+        wanted_packages = {}
         
         for i in range(len(self.agents)):
             agent = self.agents[i]
@@ -226,18 +226,27 @@ class Delivery_bots_map(Environment):
                    
             elif len(action) > 7 and action[0:7] == 'pickup ':
                 # TODO: check for multiple robots picking up the same package -- assign randomly
-                pnum = int(action[7:])
-                if pnum in packages and len(self.held_packages[i]) <4:
-                    p = self.packages[pnum]
-                    del self.packages[pnum]
+                pid = int(action[7:])
+                if pid in packages and len(self.held_packages[i]) <4:
+                    if pid not in wanted_packages:
+                        wanted_packages[pid] = [i]
+                    else: 
+                        wanted_packages[pid].append(i)
                     updated_tiles.add(self.agent_locations[i])
-                    percept['pickedup'] = (pnum, p[2], p[3], p[4])
-                    self.held_packages[i].append((pnum, p[2], p[3], p[4]))
-                    self.display(2, f"agent {i} picked up package {pnum}")
                 else: 
                     self.display(2, "agent issued invalid move")
                     percept['error'] ='INVALID_MOVE'
-                
+            elif len(action) > 9 and action[0:9] == 'generate ' and i==0:
+                # agent 0 is  package truck for now, can generate packages
+                tokens = action.split(' ')
+                value = int(tokens[1])
+                self.packages[self.package_num] = (
+                    self.agent_locations[i][0], 
+                    self.agent_locations[i][1],
+                    random.randint(0, self.rows-1),
+                    random.randint(0, self.cols-1),
+                    value)
+                self.package_num += 1
             elif action != 'skip':
                 self.display(2, "agent issued invalid move")
                 percept['error'] ='INVALID_MOVE'
@@ -270,6 +279,22 @@ class Delivery_bots_map(Environment):
         for p in percepts:
             p['locations'] = self.agent_locations
             
+        # determine who gets disputed packages
+        for pid in wanted_packages:
+            aid = random.choice(wanted_packages[pid])
+            p = self.packages[pid]
+            del self.packages[pid]
+            updated_tiles.add(self.agent_locations[aid])
+            for percept in percepts:
+                percept['pickedup'] = (pid, p[2], p[3], p[4])
+            self.held_packages[aid].append((pid, p[2], p[3], p[4]))
+            self.display(2, f"agent {aid} picked up package {pid}")
+            
+        
+        # inform all agents of current scores
+        for p in percepts:
+            p['scores'] = self.scores
+            
         for r,c in updated_tiles:
             self.update_tile(r, c)
                 
@@ -288,6 +313,22 @@ class Simple_Delivery_Agent(Agent):
             return 'pickup ' + str(pnum)
             
         return random.choice(('north', 'south', 'east', 'west'))
+    
+
+    
+class Package_Truck_Agent(Agent):
+
+    def __init__(self, moveProb=0.75, genProb=0.1, valueRange=(1,5)):
+        self.moveProb = moveProb
+        self.genProb = genProb
+        self.valueRange = valueRange
+
+    def select_action(self, percept):
+        if random.random() < self.moveProb:  
+            return random.choice(('north', 'south', 'east', 'west'))
+        if random.random() < self.genProb:
+            return 'generate ' + str(random.randint(self.valueRange[0], self.valueRange[1]))
+        return 'skip'
     
 
     
