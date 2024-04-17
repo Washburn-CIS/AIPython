@@ -21,15 +21,15 @@
 #  * agents can move to adjacent passable tiles on a turn
 
 # Package truck moves around and drops packages but has hidden strategy
-# possibly more than one truck
+# Package truck will be agent 0
 # packages have a value (integer > 0)
 # goal of the game is get the most delivery value
 # robots can hold a maximum of 3 packages
-# agents can be sensed within 10 squares manhattan distance
-# agents have a type (truck/robot) and a ID
+# agents can be sensed globally
+# agents have an ID
 # packages have an ID
-# deliver command delivers all packages meant for current destination
-# add "pick up <package num> command
+# packages are automatically delivered when an agent arrives at their destination
+# add "pickup <package num> command
 # robots sense scores at all times
 # robots sense # of unclaimed packages at all times 
 # if two robots attempt to pick up the same package at the same time, result will be uniformly random
@@ -155,7 +155,10 @@ class Delivery_bots_map(Environment):
     def get_packages_on_tile(self, r, c):
         return [i for i,p in self.packages.items() if p[0] == r and p[1] == c]
     
+    
     def update_tile(self, r, c):
+        """abstract method called whenever the details of a tile have been updated.
+        Used for visualization."""
         pass
     
     def do(self, actions):

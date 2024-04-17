@@ -6,7 +6,7 @@ from PIL import Image, ImageTk
 
 class Delivery_bots_visualization(Delivery_bots_map):
 
-    def __init__(self, map, root, sprite_size=50):
+    def __init__(self, map, root, sprite_size=50, *agentSpriteFiles):
         super().__init__(map)
     
         self.root = root
@@ -24,7 +24,7 @@ class Delivery_bots_visualization(Delivery_bots_map):
         self.land_sprites['!'] = Image.open("danger.png").convert("RGBA")
         
         # load agent sprites
-        self.agent_sprites = [Image.open("robot.png").convert("RGBA"), Image.open("robot2.png").convert("RGBA")] # TODO: generalize
+        self.agent_sprites = [Image.open(fn).convert("RGBA") for fn in agentSpriteFiles]
         
         # load other sprites
         self.package_sprite = Image.open("package.png").convert("RGBA")
@@ -38,17 +38,23 @@ class Delivery_bots_visualization(Delivery_bots_map):
         
     def update_tile(self, r, c):
         additional_images = []
-        package_locations = [(p[0], p[1]) for p in self.packages.values()]
-        if (r,c) in package_locations:
-            print("****************\n\n\n\n\n\n**********PACKAGE" + str((r,c)))
+
+	# add package sprite if neccessary
+        if self.get_packages_on_tile(r, c):
             additional_images.append(self.package_sprite)
+        
+        # add agent sprites
         if (r,c) in self.agent_locations:
             for i in range(len(self.agent_locations)):
                 if self.agent_locations[i] == (r,c):
                     additional_images.append(self.agent_sprites[i])
+                    
+        # glue all sprites together with land sprite
         self.set_sprite(r, c, self.land_sprites[self.map[r, c]], additional_images)
         
+     
     def set_sprite(self, r, c, new_sprite_image, additional_images=[]):
+        """update GUI to include multiple sprites on a given tile"""
         new_sprite_image = new_sprite_image.resize((self.sprite_size, self.sprite_size), Image.ANTIALIAS)
         for im in additional_images:
             next_img = im.resize((self.sprite_size, self.sprite_size), Image.ANTIALIAS)
