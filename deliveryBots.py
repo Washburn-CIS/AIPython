@@ -48,6 +48,26 @@ simple_map = {
   'packages': ((2,0,0,0,1),)
 }
 
+test_map = {
+  'map': """.###
+.###
+..**""",
+  'packages': ((2,0,0,0,1),)
+}
+
+versus_map = {
+  'map': """###########
+#....*....#
+#.........#
+#####.#####
+#.........#
+#....#....#
+#*...#...*#
+###########""",
+  'packages': ((6,1,1,1,10),(6,9,1,9,10))
+}
+
+
 class Delivery_bots_map(Environment):
 
     def __init__(self, map):
@@ -119,7 +139,7 @@ class Delivery_bots_map(Environment):
         """
         self.agents = agents
         self.stuck = [False]*len(agents)
-        self.held_packages = [[]]*len(agents)
+        self.held_packages = [list() for x in [[]]*len(agents)]
         self.scores = [0]*len(agents)
         percepts = []
         for i in range(len(agents)):
@@ -183,7 +203,7 @@ class Delivery_bots_map(Environment):
             action = actions[i]
             percept = {}
             self.display(2, f"agent {i} is currently at {self.agent_locations[i][0]}, {self.agent_locations[i][1]}")
-            self.display(2, f"agent {i} issued action: {action}")
+            self.display(2, f"agent {i} is carrying out action: {action}")
             
             # find packages on tile
             packages = self.get_packages_on_tile(self.agent_locations[i][0], self.agent_locations[i][1])
@@ -225,7 +245,6 @@ class Delivery_bots_map(Environment):
                     percept['error'] ='INVALID_MOVE'
                    
             elif len(action) > 7 and action[0:7] == 'pickup ':
-                # TODO: check for multiple robots picking up the same package -- assign randomly
                 pid = int(action[7:])
                 if pid in packages and len(self.held_packages[i]) <4:
                     if pid not in wanted_packages:
@@ -281,15 +300,14 @@ class Delivery_bots_map(Environment):
             
         # determine who gets disputed packages
         for pid in wanted_packages:
+            self.display(2, f"package {pid} is wanted by agents: {wanted_packages[pid]}")
             aid = random.choice(wanted_packages[pid])
             p = self.packages[pid]
             del self.packages[pid]
             updated_tiles.add(self.agent_locations[aid])
-            for percept in percepts:
-                percept['pickedup'] = (pid, p[2], p[3], p[4])
+            percepts[aid]['pickedup'] = (pid, p[2], p[3], p[4])
             self.held_packages[aid].append((pid, p[2], p[3], p[4]))
             self.display(2, f"agent {aid} picked up package {pid}")
-            
         
         # inform all agents of current scores
         for p in percepts:
@@ -297,11 +315,8 @@ class Delivery_bots_map(Environment):
             
         for r,c in updated_tiles:
             self.update_tile(r, c)
-                
+        
         return percepts   
-
-
-# TODO: develop a web-based log visualizer for deliverybots
 
 class Simple_Delivery_Agent(Agent):
 
@@ -314,7 +329,13 @@ class Simple_Delivery_Agent(Agent):
             
         return random.choice(('north', 'south', 'east', 'west'))
     
+class Test_Agent(Agent):
+    def __init__(self, *actions):
+        self.actions = list(actions)
+        self.actions.reverse()
 
+    def select_action(self, percept):
+        return self.actions.pop() if self.actions else 'skip'
     
 class Package_Truck_Agent(Agent):
 
