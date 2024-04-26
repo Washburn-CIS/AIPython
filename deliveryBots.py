@@ -40,7 +40,7 @@ import random
 # example map description
 # dictionary of:
 #    'map' -> String: see Delivery_bots_map constructor docstring
-#    'package' -> Tuple_of(4-Tuple_of integer): see Delivery_bots_map constructor docstring
+#    'package' -> Tuple_of(5-Tuple_of integer): see Delivery_bots_map constructor docstring
 simple_map = {
   'map': """...*
 !##.
@@ -198,7 +198,7 @@ class Delivery_bots_map(Environment):
         updated_tiles = set()
         wanted_packages = {}
         
-        for i in range(len(self.agents)):
+        for i in range(len(self.agents)): # develop percept and handle action for each agent
             agent = self.agents[i]
             action = actions[i]
             percept = {}
@@ -279,15 +279,9 @@ class Delivery_bots_map(Environment):
                     self.display(2, f"agent {i} delivered package {p[0]}")
                     delivered_packages.append((i, p[0]))
             
-            # notify packages on tile
-            packages = self.get_packages_on_tile(self.agent_locations[i][0], self.agent_locations[i][1])
-            if packages:
-                percept['packages'] = \
-                    [(i, 
-                      self.packages[i][2], 
-                      self.packages[i][3], 
-                      self.packages[i][4]) for i in packages]
+            
             percepts.append(percept)
+            
         
         # inform all agents of delivered packages
         if delivered_packages:
@@ -298,7 +292,10 @@ class Delivery_bots_map(Environment):
         for p in percepts:
             p['locations'] = self.agent_locations
             
-        # determine who gets disputed packages
+            
+            
+            
+        # determine who gets disputed packages and resolve pickup commands
         for pid in wanted_packages:
             self.display(2, f"package {pid} is wanted by agents: {wanted_packages[pid]}")
             aid = random.choice(wanted_packages[pid])
@@ -308,6 +305,20 @@ class Delivery_bots_map(Environment):
             percepts[aid]['pickedup'] = (pid, p[2], p[3], p[4])
             self.held_packages[aid].append((pid, p[2], p[3], p[4]))
             self.display(2, f"agent {aid} picked up package {pid}")
+        
+        
+        
+        # notify each agent of packages on tile 
+        for i in range(len(self.agents)): 
+            packages = self.get_packages_on_tile(self.agent_locations[i][0], self.agent_locations[i][1])
+            if packages:
+                percept['packages'] = \
+                    [(i, 
+                      self.packages[i][2], 
+                      self.packages[i][3], 
+                      self.packages[i][4]) for i in packages]
+            
+            
         
         # inform all agents of current scores
         for p in percepts:
