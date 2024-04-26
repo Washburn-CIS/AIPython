@@ -310,9 +310,12 @@ class Delivery_bots_map(Environment):
         
         # notify each agent of packages on tile 
         for i in range(len(self.agents)): 
-            packages = self.get_packages_on_tile(self.agent_locations[i][0], self.agent_locations[i][1])
+            agent_location = (self.agent_locations[i][0], self.agent_locations[i][1])
+            self.display(2, f"agent {i} looking for packages on {agent_location}")
+            packages = self.get_packages_on_tile(agent_location[0], agent_location[1])
             if packages:
-                percept['packages'] = \
+                self.display(2, f"found these: {packages}")
+                percepts[i]['packages'] = \
                     [(i, 
                       self.packages[i][2], 
                       self.packages[i][3], 
