@@ -135,6 +135,8 @@ class Delivery_bots_map(Environment):
                value
            
            key: 'delivered_packages' a list of 2-tuples of agent id and package id
+
+           key: 'stuck' is a boolean representing indicating if the agent is stuck
            
         """
         self.agents = agents
@@ -236,6 +238,7 @@ class Delivery_bots_map(Environment):
                     updated_tiles.add(dest)
                     self.display(2, "agent got stuck")
                     self.stuck[i] = True		# agent will be stuck next turn
+                    percept['stuck'] = True  # Cameron Hagemaster // Spring 2024
                     self.agent_locations[i] = dest		# update agents location
                     self.display(2, f"agent is now at {self.agent_locations[i][0]}, {self.agent_locations[i][1]}")
 
