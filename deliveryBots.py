@@ -294,7 +294,9 @@ class Delivery_bots_map(Environment):
         # inform all agents of all agent movements
         for p in percepts:
             p['locations'] = self.agent_locations
-            
+            p['your_id'] = i
+            p['map'] = self.map
+
             
             
             
