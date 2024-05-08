@@ -309,10 +309,12 @@ class Delivery_bots_map(Environment):
                 p['delivered_packages'] = delivered_packages
                 
         # inform all agents of all agent movements
+        i=0
         for p in percepts:
             p['locations'] = self.agent_locations
             p['your_id'] = i
             p['map'] = self.map
+            i += 1
 
             
             
@@ -375,7 +377,7 @@ class Test_Agent(Agent):
     
 class Package_Truck_Agent(Agent):
 
-    def __init__(self, moveProb=0.75, genProb=0.1, valueRange=(1,5)):
+    def __init__(self, moveProb=0.75, genProb=0.2, valueRange=(1,5)):
         self.moveProb = moveProb
         self.genProb = genProb
         self.valueRange = valueRange
